@@ -5,7 +5,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data-18
     environment:
       POSTGRES_DB: airport_db
       POSTGRES_USER: postgres
@@ -16,7 +16,25 @@ services:
       timeout: 5s
       start_period: 10s
       retries: 5
+#  redis:
+#    image: redis:7-alpine
+#    container_name: redis-cache
+#    ports:
+#      - "6379:6379"
+#    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+#    environment:
+#      - REDIS_PASSWORD=admin_redis
+#    volumes:
+#      - redis_data:/data
+#    healthcheck:
+#      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+#      interval: 10s
+#      timeout: 3s
+#      retries: 3
+
 
 volumes:
   postgres_data:
+#  redis_data:
+
 
