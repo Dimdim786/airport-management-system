@@ -3,6 +3,8 @@ package rut.miit.airportweb.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import rut.miit.airportweb.dao.entity.UserEntity;
@@ -12,6 +14,8 @@ import java.time.LocalDateTime;
 // TODO: Если кто-то захочет переписать на норм getter и setter, то перепишите
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 public class UserDto {
 
     private Integer id;
