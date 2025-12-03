@@ -2,6 +2,7 @@ package rut.miit.airportweb.dao.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import lombok.Builder;
 import lombok.Setter;
 
 import java.util.ArrayList;
@@ -22,6 +23,14 @@ public class PassengerEntity {
 
     // Constructors, Getters and Setters
     public PassengerEntity() {}
+
+    @Builder
+    public PassengerEntity(UserEntity user, String passportNumber, String phone, String email) {
+        this.user = user;
+        this.passportNumber = passportNumber;
+        this.phone = phone;
+        this.email = email;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -3,6 +3,7 @@ package rut.miit.airportweb.dao.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import lombok.Builder;
 import lombok.Setter;
 
 import java.math.BigDecimal;
@@ -28,6 +29,18 @@ public class TicketEntity {
     public TicketEntity() {
         this.status = TicketStatus.BOOKED;
         this.bookingDate = LocalDateTime.now();
+    }
+
+    @Builder
+    public TicketEntity(FlightEntity flight, PassengerEntity passenger, String seatNumber, BigDecimal price, String ticketNumber, TicketStatus status, LocalDateTime bookingDate, BoardingPassEntity boardingPass) {
+        this.flight = flight;
+        this.passenger = passenger;
+        this.seatNumber = seatNumber;
+        this.price = price;
+        this.ticketNumber = ticketNumber;
+        this.status = TicketStatus.BOOKED;
+        this.bookingDate = LocalDateTime.now();
+        this.boardingPass = boardingPass;
     }
 
     @Id

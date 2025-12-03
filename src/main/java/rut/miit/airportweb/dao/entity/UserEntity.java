@@ -26,6 +26,16 @@ public class UserEntity {
         this.createdAt = LocalDateTime.now();
     }
 
+    public UserEntity(String username, String password, Role role, String firstName, String lastName, PassengerEntity passenger) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.createdAt = LocalDateTime.now();
+        this.passenger = passenger;
+    }
+
     // Getters and Setters
 
     @Id

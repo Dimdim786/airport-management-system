@@ -24,6 +24,18 @@ public class BoardingPassEntity {
         this.checkInTime = LocalDateTime.now();
     }
 
+    public BoardingPassEntity(TicketEntity ticket,
+                              LocalDateTime checkInTime,
+                              UserEntity verifiedByBorderGuard,
+                              UserEntity verifiedByCustoms)
+    {
+        setTicket(ticket);
+        setCheckInTime(checkInTime);
+        setVerifiedByBorderGuard(verifiedByBorderGuard);
+        setVerifiedByCustoms(verifiedByCustoms);
+        this.checkInTime = LocalDateTime.now();
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Integer getId() { return id; }
@@ -51,5 +63,46 @@ public class BoardingPassEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "verified_by_customs")
     public UserEntity getVerifiedByCustoms() { return verifiedByCustoms; }
+
+    public static BoardingPassBuilder builder() {
+        return new BoardingPassBuilder();
+    }
+
+    public static class BoardingPassBuilder {
+
+        private TicketEntity ticket;
+        private LocalDateTime checkInTime;
+        private UserEntity verifiedByBorderGuard;
+        private UserEntity verifiedByCustoms;
+
+        public BoardingPassBuilder ticket(TicketEntity ticket) {
+            this.ticket = ticket;
+            return this;
+        }
+
+        public BoardingPassBuilder checkInTime(LocalDateTime checkInTime) {
+            this.checkInTime = checkInTime;
+            return this;
+        }
+
+        public BoardingPassBuilder verifiedByBorderGuard(UserEntity verifiedByBorderGuard) {
+            this.verifiedByBorderGuard = verifiedByBorderGuard;
+            return this;
+        }
+
+        public BoardingPassBuilder verifiedByCustoms(UserEntity verifiedByCustoms) {
+            this.verifiedByCustoms = verifiedByCustoms;
+            return this;
+        }
+
+        public BoardingPassEntity build() {
+            return new BoardingPassEntity(
+                    this.ticket,
+                    this.checkInTime,
+                    this.verifiedByBorderGuard,
+                    this.verifiedByCustoms
+            );
+        }
+    }
 
 }
