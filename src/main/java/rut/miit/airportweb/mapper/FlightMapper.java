@@ -1,13 +1,14 @@
 package rut.miit.airportweb.mapper;
 
+import lombok.experimental.UtilityClass;
 import org.springframework.stereotype.Component;
 import rut.miit.airportweb.dao.entity.FlightEntity;
 import rut.miit.airportweb.dto.FlightDto;
 
-@Component
+@UtilityClass
 public class FlightMapper {
 
-    public FlightDto map(FlightEntity flight) {
+    public static FlightDto map(FlightEntity flight) {
         return FlightDto.builder()
                 .id(flight.getId())
                 .flightNumber(flight.getFlightNumber())

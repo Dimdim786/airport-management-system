@@ -1,7 +1,6 @@
 package rut.miit.airportweb.mapper;
 
 import lombok.experimental.UtilityClass;
-import org.springframework.stereotype.Component;
 import rut.miit.airportweb.dao.entity.UserEntity;
 import rut.miit.airportweb.dto.UserDto;
 
