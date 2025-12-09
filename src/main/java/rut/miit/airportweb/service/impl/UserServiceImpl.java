@@ -107,7 +107,7 @@ public class UserServiceImpl implements UserService {
     public List<UserDto> getAllPassengers() {
         return this.getAllUsersOptimized()
                 .stream()
-                .filter(user -> UserEntity.Role.PASSENGER.toString().equals(user.getPassengerId()))
+                .filter(user -> user.getRole().toString().equals(UserEntity.Role.PASSENGER.toString()))
                 .toList();
     }
 }
