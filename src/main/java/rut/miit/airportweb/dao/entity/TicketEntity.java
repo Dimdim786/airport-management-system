@@ -3,7 +3,6 @@ package rut.miit.airportweb.dao.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
-import lombok.Builder;
 import lombok.Setter;
 
 import java.math.BigDecimal;
@@ -31,7 +30,6 @@ public class TicketEntity {
         this.bookingDate = LocalDateTime.now();
     }
 
-    @Builder
     public TicketEntity(FlightEntity flight, PassengerEntity passenger, String seatNumber, BigDecimal price, String ticketNumber, TicketStatus status, LocalDateTime bookingDate, BoardingPassEntity boardingPass) {
         this.flight = flight;
         this.passenger = passenger;
@@ -80,5 +78,57 @@ public class TicketEntity {
 
     public enum TicketStatus {
         BOOKED, CHECKED_IN, BOARDED
+    }
+
+    public static TicketEntityBuilder builder() {
+        return new TicketEntityBuilder();
+    }
+
+    public static class TicketEntityBuilder {
+        private TicketEntity ticket = new TicketEntity();
+
+        public TicketEntityBuilder flight(FlightEntity flight) {
+            this.ticket.setFlight(flight);
+            return this;
+        }
+
+        public TicketEntityBuilder passenger(PassengerEntity passenger) {
+            this.ticket.setPassenger(passenger);
+            return this;
+        }
+
+        public TicketEntityBuilder seatNumber(String seatNumber) {
+            this.ticket.setSeatNumber(seatNumber);
+            return this;
+        }
+
+        public TicketEntityBuilder price(BigDecimal price) {
+            this.ticket.setPrice(price);
+            return this;
+        }
+
+        public TicketEntityBuilder ticketNumber(String ticketNumber) {
+            this.ticket.setTicketNumber(ticketNumber);
+            return this;
+        }
+
+        public TicketEntityBuilder status(TicketStatus status) {
+            this.ticket.setStatus(status);
+            return this;
+        }
+
+        public TicketEntityBuilder bookingDate(LocalDateTime bookingDate) {
+            this.ticket.setBookingDate(bookingDate);
+            return this;
+        }
+
+        public TicketEntityBuilder boardingPass(BoardingPassEntity boardingPass) {
+            this.ticket.setBoardingPass(boardingPass);
+            return this;
+        }
+
+        public TicketEntity build() {
+            return this.ticket;
+        }
     }
 }

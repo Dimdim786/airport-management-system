@@ -24,7 +24,6 @@ public class PassengerEntity {
     // Constructors, Getters and Setters
     public PassengerEntity() {}
 
-    @Builder
     public PassengerEntity(UserEntity user, String passportNumber, String phone, String email) {
         this.user = user;
         this.passportNumber = passportNumber;
@@ -55,5 +54,47 @@ public class PassengerEntity {
 
     @OneToMany(mappedBy = "passenger", cascade = CascadeType.ALL)
     public List<TicketEntity> getTickets() { return this.tickets; }
+
+    public static PassengerEntityBuilder builder() {
+        return new PassengerEntityBuilder();
+    }
+
+    public static final class PassengerEntityBuilder {
+        PassengerEntity entity = new PassengerEntity();
+
+        public PassengerEntityBuilder user(UserEntity user) {
+            this.entity.setUser(user);
+            return this;
+        }
+
+        public PassengerEntityBuilder passportNumber(String passportNumber) {
+            this.entity.setPassportNumber(passportNumber);
+            return this;
+        }
+
+        public PassengerEntityBuilder phone(String phone) {
+            this.entity.setPhone(phone);
+            return this;
+        }
+
+        public PassengerEntityBuilder email(String email) {
+            this.entity.setEmail(email);
+            return this;
+        }
+
+        public PassengerEntityBuilder luggageChecked(boolean checked) {
+            this.entity.setLuggageChecked(checked);
+            return this;
+        }
+
+        public PassengerEntityBuilder tickets(List<TicketEntity> ticketEntities) {
+            this.entity.setTickets(ticketEntities);
+            return this;
+        }
+
+        public PassengerEntity build() {
+            return this.entity;
+        }
+    }
 
 }

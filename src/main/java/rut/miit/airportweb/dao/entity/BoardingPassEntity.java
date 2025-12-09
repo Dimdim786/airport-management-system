@@ -24,18 +24,6 @@ public class BoardingPassEntity {
         this.checkInTime = LocalDateTime.now();
     }
 
-    public BoardingPassEntity(TicketEntity ticket,
-                              LocalDateTime checkInTime,
-                              UserEntity verifiedByBorderGuard,
-                              UserEntity verifiedByCustoms)
-    {
-        setTicket(ticket);
-        setCheckInTime(checkInTime);
-        setVerifiedByBorderGuard(verifiedByBorderGuard);
-        setVerifiedByCustoms(verifiedByCustoms);
-        this.checkInTime = LocalDateTime.now();
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Integer getId() { return id; }
@@ -70,38 +58,45 @@ public class BoardingPassEntity {
 
     public static class BoardingPassBuilder {
 
-        private TicketEntity ticket;
-        private LocalDateTime checkInTime;
-        private UserEntity verifiedByBorderGuard;
-        private UserEntity verifiedByCustoms;
+        BoardingPassEntity boardingPass = new BoardingPassEntity();
 
         public BoardingPassBuilder ticket(TicketEntity ticket) {
-            this.ticket = ticket;
+            this.boardingPass.setTicket(ticket);
             return this;
         }
 
         public BoardingPassBuilder checkInTime(LocalDateTime checkInTime) {
-            this.checkInTime = checkInTime;
+            this.boardingPass.setCheckInTime(checkInTime);
             return this;
         }
 
-        public BoardingPassBuilder verifiedByBorderGuard(UserEntity verifiedByBorderGuard) {
-            this.verifiedByBorderGuard = verifiedByBorderGuard;
+        public BoardingPassBuilder passportVerified(boolean passportVerified) {
+            this.boardingPass.setPassportVerified(passportVerified);
             return this;
         }
 
-        public BoardingPassBuilder verifiedByCustoms(UserEntity verifiedByCustoms) {
-            this.verifiedByCustoms = verifiedByCustoms;
+        public BoardingPassBuilder luggageVerified(boolean luggageVerified) {
+            this.boardingPass.setLuggageVerified(luggageVerified);
+            return this;
+        }
+
+        public BoardingPassBuilder boarded(boolean boarded) {
+            this.boardingPass.setBoarded(boarded);
+            return this;
+        }
+
+        public BoardingPassBuilder verifiedByBorderGuard(UserEntity borderGuard) {
+            this.boardingPass.setVerifiedByBorderGuard(borderGuard);
+            return this;
+        }
+
+        public BoardingPassBuilder verifiedByCustoms(UserEntity customs) {
+            this.boardingPass.setVerifiedByCustoms(customs);
             return this;
         }
 
         public BoardingPassEntity build() {
-            return new BoardingPassEntity(
-                    this.ticket,
-                    this.checkInTime,
-                    this.verifiedByBorderGuard,
-                    this.verifiedByCustoms
-            );
+            return this.boardingPass;
         }
     }
 
