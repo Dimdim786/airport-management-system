@@ -20,7 +20,7 @@ public interface FlightService extends CommonService {
      * @param createdByUserId ID создателя
      * @return созданный рейс
      */
-    FlightDto createFlight(FlightCreateDto flightCreateDto, Integer createdByUserId);
+    FlightDto createFlight(FlightCreateDto flightCreateDto, String createdByUserUsername);
 
     // Пока реализовывать не надо, потом напишу как надо будет
 //    /**
