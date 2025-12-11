@@ -106,8 +106,11 @@ public class PassengerServiceImpl implements PassengerService {
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public PassengerDto updateLuggageStatus(String passengerPassportNumber, boolean luggageChecked) {
-        PassengerEntity passenger = this.passengerRepository.updateLuggageStatus(passengerPassportNumber, luggageChecked);
-        return PassengerMapper.map(passenger);
+        return this.passengerRepository.updateLuggageStatus(passengerPassportNumber, luggageChecked)
+                .map(PassengerMapper::map)
+                .orElseThrow(
+                        () -> new EntityNotFoundException(String.format("Passenger with passport number %s not found", passengerPassportNumber))
+                );
     }
 
     @Override
