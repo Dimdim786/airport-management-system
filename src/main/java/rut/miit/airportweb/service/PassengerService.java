@@ -74,7 +74,7 @@ public interface PassengerService {
      * @param luggageChecked статус проверки багажа
      * @return обновленный пассажир
      */
-    PassengerDto updateLuggageStatus(Integer passengerId, boolean luggageChecked);
+    PassengerDto updateLuggageStatus(String passengerPassportNumber, boolean luggageChecked);
 
     /**
      * Проверить паспортные данные пассажира

@@ -1,6 +1,7 @@
 package rut.miit.airportweb.dao.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import rut.miit.airportweb.dao.entity.PassengerEntity;
@@ -25,4 +26,8 @@ public interface PassengerRepository extends JpaRepository<PassengerEntity, Inte
 
     @Query("SELECT p FROM passenger_entity p JOIN FETCH p.user u WHERE u.username = :username")
     List<PassengerEntity> findByUsername(String username);
+
+    @Modifying
+    @Query("UPDATE passenger_entity p SET p.luggageChecked = :value WHERE p.passportNumber = :passportNumber")
+    PassengerEntity updateLuggageStatus(String passportNumber, boolean value);
 }

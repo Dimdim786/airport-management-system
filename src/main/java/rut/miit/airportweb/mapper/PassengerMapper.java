@@ -3,6 +3,7 @@ package rut.miit.airportweb.mapper;
 import lombok.experimental.UtilityClass;
 import rut.miit.airportweb.dao.entity.PassengerEntity;
 import rut.miit.airportweb.dao.entity.TicketEntity;
+import rut.miit.airportweb.dto.PassengerCreateDto;
 import rut.miit.airportweb.dto.PassengerDto;
 import rut.miit.airportweb.dto.TicketDto;
 
@@ -33,6 +34,14 @@ public class PassengerMapper {
         return ticketEntities.stream()
                 .map(TicketMapper::map)
                 .collect(Collectors.toList());
+    }
+
+    public static PassengerEntity map(PassengerCreateDto dto) {
+        return PassengerEntity.builder()
+                .passportNumber(dto.getPassportNumber())
+                .phone(dto.getPhone())
+                .email(dto.getEmail())
+                .build();
     }
 
 }
