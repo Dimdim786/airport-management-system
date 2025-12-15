@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import rut.miit.airportweb.dao.entity.PassengerEntity;
 import rut.miit.airportweb.dao.entity.UserEntity;
@@ -11,7 +12,6 @@ import rut.miit.airportweb.dao.repository.PassengerRepository;
 import rut.miit.airportweb.dao.repository.UserRepository;
 import rut.miit.airportweb.dto.UserDto;
 import rut.miit.airportweb.dto.UserRegistrationDto;
-import rut.miit.airportweb.exception.EntityAlreadyExistsException;
 import rut.miit.airportweb.exception.EntityNotFoundException;
 import rut.miit.airportweb.mapper.UserMapper;
 import rut.miit.airportweb.service.UserService;
@@ -31,45 +31,46 @@ public class UserServiceImpl implements UserService {
     private final PassengerRepository passengerRepository;
 
     @Override
-    @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public UserDto registerUser(UserRegistrationDto dto) {
         log.info("Registering user {}", dto.getUsername());
 
-        // Проверяем, не существует ли уже пользователь с таким username
-        if (this.userRepository.findByUsername(dto.getUsername()).isPresent()) {
-            throw new EntityAlreadyExistsException(
-                    String.format("User with username %s already exists", dto.getUsername()));
+        // Проверки...
+
+        try {
+            // Сначала создаем и сохраняем User
+            UserEntity userEntity = new UserEntity();
+            userEntity.setUsername(dto.getUsername());
+            userEntity.setPassword(this.passwordEncoder.encode(dto.getPassword()));
+            userEntity.setFirstName(dto.getFirstName());
+            userEntity.setLastName(dto.getLastName());
+            userEntity.setRole(UserEntity.Role.PASSENGER);
+
+            UserEntity savedUser = userRepository.save(userEntity);
+
+            // Затем создаем и сохраняем Passenger
+            PassengerEntity passenger = new PassengerEntity();
+            passenger.setUser(savedUser);
+            passenger.setPassportNumber(dto.getPassportNumber());
+            passenger.setEmail(dto.getEmail());
+            passenger.setPhone(dto.getPhone());
+            passenger.setLuggageChecked(false);
+
+            PassengerEntity savedPassenger = passengerRepository.save(passenger);
+
+            // Обновляем связь
+            savedUser.setPassenger(savedPassenger);
+            userRepository.save(savedUser);
+
+            log.info("Registration successful: User ID={}, Passenger ID={}",
+                    savedUser.getId(), savedPassenger.getId());
+
+            return UserMapper.map(savedUser);
+
+        } catch (Exception e) {
+            log.error("Registration failed", e);
+            throw new RuntimeException("Registration failed", e);
         }
-
-        // Проверяем, не существует ли уже пассажир с таким паспортом
-        if (this.passengerRepository.findByPassportNumber(dto.getPassportNumber()).isPresent()) {
-            throw new EntityAlreadyExistsException(
-                    String.format("Passenger with passport %s already exists", dto.getPassportNumber()));
-        }
-
-        // Создаем пользователя
-        UserEntity userEntity = UserMapper.map(dto);
-        userEntity.setPassword(this.passwordEncoder.encode(dto.getPassword()));
-
-        // Создаем пассажира (только если роль PASSENGER)
-        PassengerEntity passenger = null;
-        if (UserEntity.Role.valueOf(dto.getRole()) == UserEntity.Role.PASSENGER) {
-            passenger = PassengerEntity.builder()
-                    .user(userEntity)
-                    .passportNumber(dto.getPassportNumber())
-                    .email(dto.getEmail())
-                    .phone(null) // Можно добавить позже
-                    .luggageChecked(false)
-                    .build();
-
-            userEntity.setPassenger(passenger);
-        }
-
-        // Сохраняем пользователя (пассажир сохранится каскадно)
-        UserEntity savedUser = this.userRepository.save(userEntity);
-        log.info("User registered successfully with ID: {}", savedUser.getId());
-
-        return UserMapper.map(savedUser);
     }
 
     @Override

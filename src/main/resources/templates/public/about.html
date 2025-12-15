@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: nav"></div>
+
+<main class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0"><i class="fas fa-info-circle"></i> О системе</h4>
+                </div>
+                <div class="card-body">
+                    <h5>Система управления аэропортом</h5>
+                    <p>Данное приложение разработано в рамках курсового проекта по дисциплине
+                        "Разработка веб-приложений на Java с использованием Spring Boot".</p>
+
+                    <h5 class="mt-4">Основные функции:</h5>
+                    <ul>
+                        <li>Управление рейсами (создание, редактирование, удаление)</li>
+                        <li>Бронирование билетов пассажирами</li>
+                        <li>Онлайн-регистрация на рейсы</li>
+                        <li>Управление посадкой пассажиров</li>
+                        <li>Паспортный и таможенный контроль</li>
+                        <li>Управление пользователями и ролями</li>
+                    </ul>
+
+                    <h5 class="mt-4">Технологии:</h5>
+                    <ul>
+                        <li>Backend: Java 21, Spring Boot 4, Spring Security, Spring Data JPA</li>
+                        <li>Frontend: Thymeleaf, Bootstrap 5, JavaScript</li>
+                        <li>База данных: PostgreSQL</li>
+                        <li>Миграции: Liquibase</li>
+                    </ul>
+
+                    <h5 class="mt-4">Роли пользователей:</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">Администратор</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Полный доступ ко всем функциям системы</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">Пассажир</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Бронирование билетов, регистрация, просмотр рейсов</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="mb-0">Сотрудники</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Пограничники и таможенники - контроль пассажиров</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <a th:href="@{/}" class="btn btn-outline-primary">
+                            <i class="fas fa-home"></i> На главную
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="layout :: footer"></div>
+</body>
+</html>

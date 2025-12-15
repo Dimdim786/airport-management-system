@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: nav"></div>
+
+<main class="container mt-4">
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-suitcase"></i> Багаж рейса: <span th:text="${flight.flightNumber}">SU1001</span></h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/staff/dashboard}">Панель сотрудника</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/staff/luggage}">Багаж</a></li>
+                    <li class="breadcrumb-item active" th:text="${flight.flightNumber}">SU1001</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a th:href="@{/staff/luggage}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+        </div>
+    </div>
+
+    <!-- Сообщения -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Информация о рейсе -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-plane"></i> Информация о рейсе</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">Номер рейса:</th>
+                            <td th:text="${flight.flightNumber}">SU1001</td>
+                        </tr>
+                        <tr>
+                            <th>Маршрут:</th>
+                            <td>
+                                <span th:text="${flight.departureCity}">Москва</span> →
+                                <span th:text="${flight.arrivalCity}">Санкт-Петербург</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Вылет:</th>
+                            <td th:text="${#temporals.format(flight.departureTime, 'dd.MM.yyyy HH:mm')}">
+                                21.12.2024 14:30
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">Статус:</th>
+                            <td>
+                                <span th:switch="${flight.status}" class="status-badge">
+                                    <span th:case="'SCHEDULED'" class="badge bg-info">По расписанию</span>
+                                    <span th:case="'BOARDING'" class="badge bg-warning">Посадка</span>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Пассажиров:</th>
+                            <td th:text="${flight.totalSeats - flight.availableSeats} + '/' + ${flight.totalSeats}">
+                                150/180
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Багаж сдан:</th>
+                            <td>
+                                <div class="progress" style="height: 20px; width: 200px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 65%;">
+                                        65%
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список пассажиров и их багажа -->
+    <div class="card">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-users"></i> Багаж пассажиров</h5>
+            <span class="badge bg-light text-dark" th:text="${tickets.size()} + ' пассажиров'">
+                0 пассажиров
+            </span>
+        </div>
+        <div class="card-body">
+            <!-- Фильтры -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <select class="form-select" id="luggageFilter" onchange="filterLuggage()">
+                        <option value="">Все статусы</option>
+                        <option value="checked">Багаж сдан</option>
+                        <option value="not-checked">Багаж не сдан</option>
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="searchPassenger"
+                               placeholder="Поиск по имени, паспорту или месту"
+                               onkeyup="searchPassenger()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover" id="luggageTable">
+                    <thead>
+                    <tr>
+                        <th>Пассажир</th>
+                        <th>Паспорт</th>
+                        <th>Место</th>
+                        <th>Статус багажа</th>
+                        <th>Детали багажа</th>
+                        <th>Действия</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="ticket, stat : ${tickets}"
+                        th:data-luggage-status="${passengers[stat.index]?.luggageChecked ? 'checked' : 'not-checked'}"
+                        class="luggage-row">
+                        <td>
+                            <div th:if="${passengers[stat.index] != null}">
+                                <strong th:text="${passengers[stat.index].user.firstName + ' ' + passengers[stat.index].user.lastName}">
+                                    Иванов Иван
+                                </strong>
+                            </div>
+                            <div th:if="${passengers[stat.index] == null}" class="text-muted">
+                                Не найден
+                            </div>
+                        </td>
+                        <td>
+                            <code th:text="${ticket.passportNumber}">AB1234567</code>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary" th:text="${ticket.seatNumber}">12A</span>
+                        </td>
+                        <td>
+                            <!-- Статус багажа -->
+                            <span th:if="${passengers[stat.index] != null and passengers[stat.index].luggageChecked}"
+                                  class="badge bg-success">
+                                <i class="fas fa-check"></i> Сдан
+                            </span>
+                            <span th:if="${passengers[stat.index] != null and not passengers[stat.index].luggageChecked}"
+                                  class="badge bg-danger">
+                                <i class="fas fa-times"></i> Не сдан
+                            </span>
+                            <span th:if="${passengers[stat.index] == null}" class="badge bg-warning">
+                                <i class="fas fa-question"></i> Неизвестно
+                            </span>
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                <span th:if="${passengers[stat.index] != null and passengers[stat.index].luggageChecked}">
+                                    Багаж принят в <span th:text="${#temporals.format(#temporals.createNow(), 'HH:mm')}">14:30</span>
+                                </span>
+                                <span th:if="${passengers[stat.index] != null and not passengers[stat.index].luggageChecked}">
+                                    Ожидает сдачи
+                                </span>
+                            </small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <!-- Кнопка отметки сдачи багажа -->
+                                <form th:if="${passengers[stat.index] != null and not passengers[stat.index].luggageChecked}"
+                                      th:action="@{/staff/luggage/passenger/{passportNumber}(passportNumber=${ticket.passportNumber})}"
+                                      method="post">
+                                    <input type="hidden" name="luggageChecked" value="true">
+                                    <input type="hidden" name="flightNumber" th:value="${flight.flightNumber}">
+                                    <button type="submit" class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-check"></i> Отметить сданным
+                                    </button>
+                                </form>
+
+                                <!-- Кнопка отмены сдачи багажа -->
+                                <form th:if="${passengers[stat.index] != null and passengers[stat.index].luggageChecked}"
+                                      th:action="@{/staff/luggage/passenger/{passportNumber}(passportNumber=${ticket.passportNumber})}"
+                                      method="post">
+                                    <input type="hidden" name="luggageChecked" value="false">
+                                    <input type="hidden" name="flightNumber" th:value="${flight.flightNumber}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-times"></i> Отменить
+                                    </button>
+                                </form>
+
+                                <!-- Сканирование багажа -->
+                                <button type="button" class="btn btn-outline-info btn-sm"
+                                        onclick="scanLuggageItem(this)"
+                                        th:data-passenger="${passengers[stat.index]?.user?.firstName + ' ' + passengers[stat.index]?.user?.lastName}"
+                                        th:data-passport="${ticket.passportNumber}">
+                                    <i class="fas fa-barcode"></i> Сканировать
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Статистика по багажу -->
+            <div class="row mt-4 pt-4 border-top">
+                <div class="col-md-4 text-center">
+                    <div class="stat-number text-success"
+                         th:text="${passengers != null ? passengers.?[luggageChecked == true].size() : 0}">
+                        0
+                    </div>
+                    <div class="stat-label">Багаж сдан</div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="stat-number text-danger"
+                         th:text="${passengers != null ? passengers.?[luggageChecked == false].size() : 0}">
+                        0
+                    </div>
+                    <div class="stat-label">Багаж не сдан</div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="stat-number text-warning"
+                         th:text="${tickets.size() - (passengers != null ? passengers.size() : 0)}">
+                        0
+                    </div>
+                    <div class="stat-label">Неизвестно</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Быстрая массовая обработка -->
+    <div class="card mt-4">
+        <div class="card-header bg-warning text-white">
+            <h5 class="mb-0"><i class="fas fa-bolt"></i> Быстрая обработка</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <form th:action="@{/staff/luggage/flight/{flightNumber}/bulk(flightNumber=${flight.flightNumber})}"
+                          method="post">
+                        <input type="hidden" name="action" value="check_all">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-check-double"></i> Отметить весь багаж сданным
+                        </button>
+                        <small class="text-muted d-block mt-1">
+                            Помечает багаж всех пассажиров как сданный
+                        </small>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <form th:action="@{/staff/luggage/flight/{flightNumber}/bulk(flightNumber=${flight.flightNumber})}"
+                          method="post">
+                        <input type="hidden" name="action" value="uncheck_all">
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="fas fa-undo"></i> Сбросить все отметки
+                        </button>
+                        <small class="text-muted d-block mt-1">
+                            Сбрасывает все отметки о сдаче багажа
+                        </small>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Информация для пассажира -->
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-info-circle"></i> Информация для пассажира</h5>
+        </div>
+        <div class="card-body">
+            <p>Статус багажа доступен:</p>
+            <ul>
+                <li>Пассажиру в личном кабинете</li>
+                <li>Таможеннику при проверке документов</li>
+                <li>Сотрудникам при посадке</li>
+            </ul>
+            <div class="alert alert-warning">
+                <h6><i class="fas fa-exclamation-triangle"></i> Важно!</h6>
+                <p class="mb-0">
+                    После отметки багажа как сданного, пассажир получит уведомление,
+                    а информация станет доступной для таможенной проверки.
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Модальное окно сканирования -->
+<div class="modal fade" id="scanModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Сканирование багажа</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="scanInfo">
+                    <p>Пассажир: <strong id="modalPassengerName"></strong></p>
+                    <p>Паспорт: <code id="modalPassport"></code></p>
+                    <p>Рейс: <strong th:text="${flight.flightNumber}">SU1001</strong></p>
+                </div>
+
+                <div class="mt-4">
+                    <label for="barcodeInput" class="form-label">Штрих-код багажа:</label>
+                    <input type="text" class="form-control" id="barcodeInput"
+                           placeholder="Отсканируйте или введите вручную">
+                </div>
+
+                <div class="mt-3">
+                    <label for="luggageWeight" class="form-label">Вес багажа (кг):</label>
+                    <input type="number" class="form-control" id="luggageWeight"
+                           min="1" max="50" value="20">
+                </div>
+
+                <div class="mt-3">
+                    <label for="luggageCount" class="form-label">Количество мест:</label>
+                    <select class="form-select" id="luggageCount">
+                        <option value="1">1 место</option>
+                        <option value="2" selected>2 места</option>
+                        <option value="3">3 места (доплата)</option>
+                    </select>
+                </div>
+
+                <div class="alert alert-info mt-3">
+                    <small>
+                        <i class="fas fa-info-circle"></i>
+                        После сканирования багаж будет автоматически отмечен как сданный.
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="processScan()">
+                    <i class="fas fa-check"></i> Подтвердить сканирование
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="layout :: footer"></div>
+
+<style>
+    .stat-card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        line-height: 1;
+    }
+
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    .status-badge .badge {
+        font-size: 0.8em;
+        padding: 0.35em 0.65em;
+    }
+
+    .table-borderless th {
+        font-weight: 600;
+        color: #495057;
+    }
+</style>
+
+<script>
+    // Фильтрация по статусу багажа
+    function filterLuggage() {
+        const filterValue = document.getElementById('luggageFilter').value;
+        const rows = document.querySelectorAll('.luggage-row');
+
+        rows.forEach(row => {
+            const luggageStatus = row.getAttribute('data-luggage-status');
+            let showRow = true;
+
+            if (filterValue === 'checked' && luggageStatus !== 'checked') {
+                showRow = false;
+            } else if (filterValue === 'not-checked' && luggageStatus !== 'not-checked') {
+                showRow = false;
+            }
+
+            row.style.display = showRow ? '' : 'none';
+        });
+    }
+
+    // Поиск пассажира
+    function searchPassenger() {
+        const searchValue = document.getElementById('searchPassenger').value.toLowerCase();
+        const rows = document.querySelectorAll('.luggage-row');
+
+        rows.forEach(row => {
+            const rowText = row.textContent.toLowerCase();
+            row.style.display = rowText.includes(searchValue) ? '' : 'none';
+        });
+    }
+
+    // Сканирование багажа
+    let currentPassport = '';
+    let currentPassengerName = '';
+
+    function scanLuggageItem(button) {
+        currentPassport = button.getAttribute('data-passport');
+        currentPassengerName = button.getAttribute('data-passenger');
+
+        document.getElementById('modalPassengerName').textContent = currentPassengerName;
+        document.getElementById('modalPassport').textContent = currentPassport;
+
+        // Автогенерация штрих-кода
+        const barcode = 'BG-' + new Date().getTime() + '-' + Math.floor(Math.random() * 1000);
+        document.getElementById('barcodeInput').value = barcode;
+
+        const scanModal = new bootstrap.Modal(document.getElementById('scanModal'));
+        scanModal.show();
+    }
+
+    function processScan() {
+        const barcode = document.getElementById('barcodeInput').value;
+        const weight = document.getElementById('luggageWeight').value;
+        const count = document.getElementById('luggageCount').value;
+
+        if (!barcode) {
+            alert('Пожалуйста, введите или отсканируйте штрих-код');
+            return;
+        }
+
+        // Здесь будет отправка данных на сервер
+        alert(`Багаж отсканирован!\nПассажир: ${currentPassengerName}\nШтрих-код: ${barcode}\nВес: ${weight} кг\nМест: ${count}`);
+
+        // Закрываем модальное окно
+        const scanModal = bootstrap.Modal.getInstance(document.getElementById('scanModal'));
+        scanModal.hide();
+
+        // Автоматически отмечаем багаж как сданный
+        // В реальном приложении здесь будет AJAX запрос
+        setTimeout(() => {
+            alert('Багаж автоматически отмечен как сданный');
+            // Перезагружаем страницу для обновления статусов
+            window.location.reload();
+        }, 1000);
+    }
+
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+        // Автоматический фокус на поле поиска
+        document.getElementById('searchPassenger')?.focus();
+    });
+</script>
+</body>
+</html>

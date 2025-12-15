@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: nav"></div>
+
+<main class="container mt-4">
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-check-in"></i> Регистрация пассажиров</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/staff/dashboard}">Панель сотрудника</a></li>
+                    <li class="breadcrumb-item active">Регистрация</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-success"
+                  th:text="${scheduledFlights != null ? scheduledFlights.size() + ' рейсов' : '0 рейсов'}">
+                5 рейсов
+            </span>
+        </div>
+    </div>
+
+    <!-- Информационный блок -->
+    <div class="alert alert-info mb-4">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-info-circle fa-2x me-3"></i>
+            <div>
+                <h5 class="alert-heading mb-1">Регистрация пассажиров</h5>
+                <p class="mb-0">
+                    Выберите рейс для начала регистрации пассажиров.
+                    Регистрация доступна за 24 часа до вылета и закрывается за 40 минут до вылета.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Рейсы на регистрации -->
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-plane"></i> Рейсы на регистрации</h5>
+        </div>
+        <div class="card-body">
+            <div th:if="${scheduledFlights.empty}" class="text-center py-5">
+                <i class="fas fa-plane-slash fa-4x text-muted mb-3"></i>
+                <h4>Нет рейсов на регистрации</h4>
+                <p class="text-muted">В данный момент ни один рейс не находится в статусе регистрации</p>
+                <a th:href="@{/staff/flights}" class="btn btn-primary">
+                    <i class="fas fa-list"></i> Посмотреть все рейсы
+                </a>
+            </div>
+
+            <div th:unless="${scheduledFlights.empty}" class="row">
+                <div th:each="flight : ${scheduledFlights}" class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-success text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0" th:text="${flight.flightNumber}">SU1001</h5>
+                                    <small th:text="${flight.departureCity} + ' → ' + ${flight.arrivalCity}">
+                                        Москва → Санкт-Петербург
+                                    </small>
+                                </div>
+                                <span class="badge bg-light text-dark">
+                                    <!-- Просто день и месяц -->
+                                    <span th:text="${#temporals.day(flight.departureTime)}">21</span>.
+                                    <span th:text="${#temporals.month(flight.departureTime)}">12</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted">Вылет</small>
+                                    <!-- ИСПРАВЛЕНО: используем #temporals.format() для LocalDateTime -->
+                                    <h6 th:text="${#temporals.format(flight.departureTime, 'HH:mm')}">11:30</h6>
+                                    <small class="text-muted"
+                                           th:text="${#temporals.format(flight.departureTime, 'dd.MM.yyyy')}">
+                                        21.12.2024
+                                    </small>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <small class="text-muted">Прибытие</small>
+                                    <!-- ИСПРАВЛЕНО: используем #temporals.format() для LocalDateTime -->
+                                    <h6 th:text="${#temporals.format(flight.arrivalTime, 'HH:mm')}">13:00</h6>
+                                    <small class="text-muted"
+                                           th:text="${#temporals.format(flight.arrivalTime, 'dd.MM.yyyy')}">
+                                        21.12.2024
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Статистика регистрации -->
+                            <div class="progress mb-3" style="height: 20px;">
+                                <div class="progress-bar bg-success" role="progressbar"
+                                     th:styleappend="'width: ' + ${flight.totalSeats > 0 ?
+                                         ((flight.totalSeats - flight.availableSeats) * 100 / flight.totalSeats) : 0} + '%;'"
+                                     th:attr="aria-valuenow=${flight.totalSeats > 0 ?
+                                         ((flight.totalSeats - flight.availableSeats) * 100 / flight.totalSeats) : 0}"
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    <span th:text="${flight.totalSeats > 0 ?
+                                        ((flight.totalSeats - flight.availableSeats) * 100 / flight.totalSeats) : 0} + '%'">
+                                        10%
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="row text-center mb-3">
+                                <div class="col-4">
+                                    <div class="stat-number small"
+                                         th:text="${flight.totalSeats - flight.availableSeats}">18</div>
+                                    <div class="stat-label small">Продано</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-number small">0</div>
+                                    <div class="stat-label small">Зарегистрировано</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-number small" th:text="${flight.availableSeats}">162</div>
+                                    <div class="stat-label small">Свободно</div>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/staff/checkin/flight/{flightNumber}(flightNumber=${flight.flightNumber})}"
+                                   class="btn btn-success">
+                                    <i class="fas fa-check-in"></i> Начать регистрацию
+                                </a>
+                                <a th:href="@{/staff/boarding/flight/{flightNumber}(flightNumber=${flight.flightNumber})}"
+                                   class="btn btn-outline-warning">
+                                    <i class="fas fa-walking"></i> Перейти к посадке
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- История регистраций -->
+    <div class="card mt-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="fas fa-history"></i> Недавние регистрации</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Время</th>
+                        <th>Рейс</th>
+                        <th>Пассажир</th>
+                        <th>Паспорт</th>
+                        <th>Место</th>
+                        <th>Сотрудник</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>14:25</td>
+                        <td><strong>SU1001</strong></td>
+                        <td>Иванов И.И.</td>
+                        <td>AB1234567</td>
+                        <td><span class="badge bg-secondary">12A</span></td>
+                        <td>Мария Сидорова</td>
+                    </tr>
+                    <tr>
+                        <td>14:20</td>
+                        <td><strong>SU1003</strong></td>
+                        <td>Петров П.П.</td>
+                        <td>CD7890123</td>
+                        <td><span class="badge bg-secondary">15B</span></td>
+                        <td>Сергей Васильев</td>
+                    </tr>
+                    <tr>
+                        <td>14:15</td>
+                        <td><strong>SU1001</strong></td>
+                        <td>Сидоров С.С.</td>
+                        <td>EF3456789</td>
+                        <td><span class="badge bg-secondary">8C</span></td>
+                        <td>Анна Кузнецова</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="layout :: footer"></div>
+
+<style>
+    .stat-item {
+        padding: 10px;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1;
+    }
+
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.8rem;
+        margin-top: 5px;
+    }
+</style>
+</body>
+</html>

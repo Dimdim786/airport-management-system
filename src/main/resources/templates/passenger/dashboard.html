@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: nav"></div>
+
+<main class="container mt-4">
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-user"></i> Панель пассажира</h1>
+            <p class="text-muted mb-0">Добро пожаловать, <span th:text="${username}"></span>!</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-primary" th:text="${passenger.passportNumber}">AB123456</span>
+        </div>
+    </div>
+
+    <!-- Информация о пассажире -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-id-card"></i> Мои данные</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-user-circle fa-5x text-primary"></i>
+                    </div>
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">Имя:</th>
+                            <td th:text="${passenger.user.firstName}">Анна</td>
+                        </tr>
+                        <tr>
+                            <th>Фамилия:</th>
+                            <td th:text="${passenger.user.lastName}">Смирнова</td>
+                        </tr>
+                        <tr>
+                            <th>Паспорт:</th>
+                            <td th:text="${passenger.passportNumber}">AB123456</td>
+                        </tr>
+                        <tr>
+                            <th>Email:</th>
+                            <td th:text="${passenger.email}">anna@mail.ru</td>
+                        </tr>
+                        <tr>
+                            <th>Телефон:</th>
+                            <td th:text="${passenger.phone}">+79161234567</td>
+                        </tr>
+                    </table>
+                    <div class="d-grid">
+                        <a th:href="@{/passenger/profile}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit"></i> Редактировать профиль
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ближайшие рейсы -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-plane"></i> Мои ближайшие рейсы</h5>
+                </div>
+                <div class="card-body">
+                    <div th:if="${tickets.empty}" class="text-center py-5">
+                        <i class="fas fa-plane-slash fa-3x text-muted mb-3"></i>
+                        <h5>У вас нет билетов</h5>
+                        <p class="text-muted">Купите билет на один из доступных рейсов</p>
+                        <a th:href="@{/passenger/flights}" class="btn btn-success">
+                            <i class="fas fa-search"></i> Найти рейсы
+                        </a>
+                    </div>
+
+                    <div th:unless="${tickets.empty}" class="list-group">
+                        <div th:each="ticket : ${tickets}"
+                             th:if="${ticket.status == 'BOOKED' or ticket.status == 'CHECKED_IN'}"
+                             class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1" th:text="${ticket.flightNumber}">SU1001</h5>
+                                    <p class="mb-1" th:text="${ticket.passengerName} + ' - Место: ' + ${ticket.seatNumber}">
+                                        Анна Смирнова - Место: 15A
+                                    </p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i>
+                                        <span th:text="${#temporals.format(ticket.bookingDate, 'dd.MM.yyyy HH:mm')}">15.12.2024 10:30</span>
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="mb-2">
+                                            <span th:switch="${ticket.status}" class="ticket-status">
+                                                <span th:case="'BOOKED'" class="status-booked">Забронирован</span>
+                                                <span th:case="'CHECKED_IN'" class="status-checked-in">Зарегистрирован</span>
+                                                <span th:case="'BOARDED'" class="status-boarded">Посажен</span>
+                                            </span>
+                                    </div>
+                                    <div>
+                                        <strong class="text-success" th:text="${ticket.price} + ' ₽'">4500 ₽</strong>
+                                    </div>
+                                    <a th:href="@{/passenger/tickets/{id}(id=${ticket.ticketNumber})}"
+                                       class="btn btn-sm btn-outline-primary mt-2">
+                                        <i class="fas fa-eye"></i> Подробнее
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 text-center">
+                        <a th:href="@{/passenger/tickets}" class="btn btn-outline-success">
+                            <i class="fas fa-list"></i> Все мои билеты
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Быстрые действия -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Быстрые действия</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <a th:href="@{/passenger/flights}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-search fa-2x mb-2"></i><br>
+                                Найти рейс
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a th:href="@{/passenger/flights/available}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-ticket-alt fa-2x mb-2"></i><br>
+                                Купить билет
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a th:href="@{/passenger/tickets}" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-list fa-2x mb-2"></i><br>
+                                Мои билеты
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a th:href="@{/passenger/profile}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-user fa-2x mb-2"></i><br>
+                                Профиль
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" th:text="${activeTickets}">0</div>
+                <div class="stat-label">Активных билетов</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" th:text="${tickets.size()}">0</div>
+                <div class="stat-label">Всего билетов</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" th:text="'₽' + ${#aggregates.sum(tickets.![price])}">₽0</div>
+                <div class="stat-label">Всего потрачено</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" th:text="${passenger.luggageChecked ? 'Да' : 'Нет'}">Нет</div>
+                <div class="stat-label">Багаж сдан</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- История полетов -->
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="fas fa-history"></i> История полетов</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Рейс</th>
+                        <th>Маршрут</th>
+                        <th>Место</th>
+                        <th>Статус</th>
+                        <th>Стоимость</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="ticket : ${tickets}">
+                        <td th:text="${#temporals.format(ticket.bookingDate, 'dd.MM.yyyy')}">15.12.2024</td>
+                        <td th:text="${ticket.flightNumber}">SU1001</td>
+                        <td>Москва → Санкт-Петербург</td>
+                        <td th:text="${ticket.seatNumber}">15A</td>
+                        <td>
+                                    <span th:switch="${ticket.status}" class="ticket-status">
+                                        <span th:case="'BOOKED'" class="status-booked">Забронирован</span>
+                                        <span th:case="'CHECKED_IN'" class="status-checked-in">Зарегистрирован</span>
+                                        <span th:case="'BOARDED'" class="status-boarded">Посажен</span>
+                                    </span>
+                        </td>
+                        <td th:text="${ticket.price} + ' ₽'">4500 ₽</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="layout :: footer"></div>
+</body>
+</html>

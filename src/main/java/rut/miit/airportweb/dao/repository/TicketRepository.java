@@ -3,6 +3,7 @@ package rut.miit.airportweb.dao.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import rut.miit.airportweb.dao.entity.TicketEntity;
 
@@ -32,5 +33,10 @@ public interface TicketRepository extends JpaRepository<TicketEntity, Integer> {
         }
         return Optional.empty();
     }
+
+    @Query("SELECT COUNT(t) FROM ticket_entity t WHERE t.flight.flightNumber = :flightNumber AND t.status = :status")
+    long countByFlightFlightNumberAndStatus(
+            @Param("flightNumber") String flightNumber,
+            @Param("status") String status);
 
 }

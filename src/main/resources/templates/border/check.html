@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head">
+    <title>Результат проверки</title>
+    <style>
+        .verification-icon {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+        .border-approved {
+            border-left: 4px solid #28a745;
+        }
+        .border-rejected {
+            border-left: 4px solid #dc3545;
+        }
+        .check-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .check-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="layout :: nav"></div>
+
+<main class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-search"></i> Результат пограничной проверки</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/border/dashboard}">Пограничный контроль</a>
+                    </li>
+                    <li class="breadcrumb-item active">Результат проверки</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="text-end">
+            <a th:href="@{/border/dashboard}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+        </div>
+    </div>
+
+    <!-- Сообщения об ошибках/успехе -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i>
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div th:if="${warningMessage}" class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span th:text="${warningMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i>
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Результаты проверки -->
+    <div th:if="${checkResult != null}">
+        <!-- Карточка с результатами -->
+        <div class="card mb-4" th:classappend="${checkResult.borderClearance} ? 'border-approved' : 'border-rejected'">
+            <div class="card-header" th:classappend="${checkResult.borderClearance} ? 'bg-success text-white' : 'bg-danger text-white'">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">
+                            <i class="fas"
+                               th:classappend="${checkResult.borderClearance} ? 'fa-check-circle' : 'fa-times-circle'"></i>
+                            Результат проверки:
+                            <span th:text="${passportNumber}"></span>
+                        </h5>
+                        <small class="opacity-75" th:text="${checkResult.verificationMessage}"></small>
+                    </div>
+                    <span class="badge"
+                          th:classappend="${checkResult.borderClearance} ? 'bg-light text-success' : 'bg-light text-danger'"
+                          th:text="${checkResult.borderClearance} ? 'РАЗРЕШЕНО' : 'НЕ РАЗРЕШЕНО'">
+                    </span>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <!-- Информация о пассажире -->
+                <div th:if="${checkResult.passenger != null}" class="row mb-4">
+                    <div class="col-md-12">
+                        <h6><i class="fas fa-user"></i> Информация о пассажире:</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="check-item">
+                                    <strong>ФИО:</strong>
+                                    <span th:if="${checkResult.passenger.user != null}"
+                                          th:text="${checkResult.passenger.user.firstName} + ' ' + ${checkResult.passenger.user.lastName}"></span>
+                                    <span th:unless="${checkResult.passenger.user != null}" class="text-muted">
+                                        Не указано
+                                    </span>
+                                </div>
+                                <div class="check-item">
+                                    <strong>Номер паспорта:</strong>
+                                    <span th:text="${checkResult.passenger.passportNumber}"></span>
+                                </div>
+                                <div class="check-item">
+                                    <strong>Email:</strong>
+                                    <span th:text="${checkResult.passenger.email}"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="check-item">
+                                    <strong>Телефон:</strong>
+                                    <span th:text="${checkResult.passenger.phone}"></span>
+                                </div>
+                                <div class="check-item">
+                                    <strong>Статус багажа:</strong>
+                                    <span th:class="${checkResult.passenger.luggageChecked} ? 'text-success fw-bold' : 'text-warning fw-bold'">
+                                        <i class="fas"
+                                           th:classappend="${checkResult.passenger.luggageChecked} ? 'fa-check verification-icon' : 'fa-times verification-icon'"></i>
+                                        <span th:text="${checkResult.passenger.luggageChecked} ? 'СДАН' : 'НЕ СДАН'"></span>
+                                    </span>
+                                </div>
+                                <div class="check-item">
+                                    <strong>Статус паспорта:</strong>
+                                    <span th:class="${checkResult.passportValid} ? 'text-success fw-bold' : 'text-danger fw-bold'">
+                                        <i class="fas"
+                                           th:classappend="${checkResult.passportValid} ? 'fa-check verification-icon' : 'fa-times verification-icon'"></i>
+                                        <span th:text="${checkResult.passportValid} ? 'ДЕЙСТВИТЕЛЕН' : 'НЕДЕЙСТВИТЕЛЕН'"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Информация о билете -->
+                <div th:if="${checkResult.ticket != null}" class="row mb-4">
+                    <div class="col-md-12">
+                        <h6><i class="fas fa-ticket-alt"></i> Информация о билете:</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="check-item">
+                                    <strong>Номер билета:</strong>
+                                    <span th:text="${checkResult.ticket.ticketNumber}"></span>
+                                </div>
+                                <div class="check-item">
+                                    <strong>Рейс:</strong>
+                                    <span th:text="${checkResult.ticket.flightNumber}"></span>
+                                </div>
+                                <div class="check-item">
+                                    <strong>Место:</strong>
+                                    <span th:text="${checkResult.ticket.seatNumber}"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="check-item">
+                                    <strong>Статус билета:</strong>
+                                    <span th:text="${checkResult.ticket.status}"></span>
+                                </div>
+                                <div class="check-item">
+                                    <strong>Цена:</strong>
+                                    <span th:text="${checkResult.ticket.price}"></span>
+                                </div>
+                                <div class="check-item">
+                                    <strong>Статус проверки билета:</strong>
+                                    <span th:class="${checkResult.ticketValid} ? 'text-success fw-bold' : 'text-danger fw-bold'">
+                                        <i class="fas"
+                                           th:classappend="${checkResult.ticketValid} ? 'fa-check verification-icon' : 'fa-times verification-icon'"></i>
+                                        <span th:text="${checkResult.ticketValid} ? 'СООТВЕТСТВУЕТ' : 'НЕ СООТВЕТСТВУЕТ'"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Если билет не указан, но есть пассажир -->
+                <div th:if="${checkResult.passenger != null && checkResult.ticket == null && ticketNumber == null}"
+                     class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle"></i>
+                            Билет не указан. Проверяется только паспорт.
+                        </div>
+
+                        <!-- Показать билеты пассажира, если они есть -->
+                        <div th:if="${checkResult.passenger.tickets != null && !checkResult.passenger.tickets.isEmpty()}">
+                            <h6><i class="fas fa-ticket-alt"></i> Билеты пассажира:</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th>Номер билета</th>
+                                        <th>Рейс</th>
+                                        <th>Место</th>
+                                        <th>Статус</th>
+                                        <th>Действие</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="ticket : ${checkResult.passenger.tickets}">
+                                        <td th:text="${ticket.ticketNumber}"></td>
+                                        <td th:text="${ticket.flightNumber}"></td>
+                                        <td th:text="${ticket.seatNumber}"></td>
+                                        <td>
+                                                <span th:class="${ticket.status == 'CONFIRMED'} ? 'badge bg-success' : 'badge bg-secondary'"
+                                                      th:text="${ticket.status}"></span>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/border/check(passportNumber=${passportNumber}, ticketNumber=${ticket.ticketNumber})}"
+                                               class="btn btn-sm btn-outline-primary">
+                                                Проверить с этим билетом
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Проверка визы -->
+                <div th:if="${checkResult.visaRequired}" class="row mb-4">
+                    <div class="col-md-12">
+                        <h6><i class="fas fa-file-alt"></i> Визовые документы:</h6>
+                        <div class="alert" th:classappend="${checkResult.visaValid} ? 'alert-success' : 'alert-warning'">
+                            <i class="fas"
+                               th:classappend="${checkResult.visaValid} ? 'fa-check-circle' : 'fa-exclamation-circle'"></i>
+                            <span th:text="${checkResult.visaValid} ?
+                                'Визовые документы действительны' :
+                                'Требуется проверка визовых документов'"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Рекомендации -->
+                <div th:if="${checkResult.recommendations != null && !checkResult.recommendations.isEmpty()}" class="row">
+                    <div class="col-md-12">
+                        <h6><i class="fas fa-clipboard-check"></i> Рекомендации:</h6>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <span th:text="${checkResult.recommendations}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Формы для действий -->
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-tasks"></i> Действия пограничника</h6>
+                            </div>
+                            <div class="card-body">
+                                <form th:action="@{/border/check/approve}" method="post" class="row g-3">
+                                    <input type="hidden" name="passportNumber" th:value="${passportNumber}">
+                                    <input type="hidden" name="ticketNumber" th:value="${ticketNumber}">
+
+                                    <div class="col-md-12 mb-3">
+                                        <label for="officerNotes" class="form-label">Заметки пограничника:</label>
+                                        <textarea class="form-control" id="officerNotes" name="officerNotes"
+                                                  rows="2" placeholder="Дополнительные замечания..."></textarea>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <button type="submit" class="btn btn-success w-100"
+                                                th:disabled="${!checkResult.borderClearance}">
+                                            <i class="fas fa-check"></i> Разрешить пересечение
+                                        </button>
+                                        <small class="text-muted d-block mt-1"
+                                               th:if="${!checkResult.borderClearance}">
+                                            Разрешение недоступно из-за проблем с проверкой
+                                        </small>
+                                    </div>
+                                </form>
+
+                                <hr>
+
+                                <form th:action="@{/border/check/reject}" method="post" class="row g-3">
+                                    <input type="hidden" name="passportNumber" th:value="${passportNumber}">
+                                    <input type="hidden" name="ticketNumber" th:value="${ticketNumber}">
+
+                                    <div class="col-md-12 mb-3">
+                                        <label for="reason" class="form-label">Причина отказа:</label>
+                                        <select class="form-select" id="reason" name="reason" required>
+                                            <option value="">Выберите причину...</option>
+                                            <option value="Просроченный паспорт">Просроченный паспорт</option>
+                                            <option value="Недействительный паспорт">Недействительный паспорт</option>
+                                            <option value="Проблемы с визой">Проблемы с визой</option>
+                                            <option value="Несоответствие документов">Несоответствие документов</option>
+                                            <option value="Нахождение в списках наблюдения">Нахождение в списках наблюдения</option>
+                                            <option value="Подозрительное поведение">Подозрительное поведение</option>
+                                            <option value="Другая причина">Другая причина</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-12 mb-3">
+                                        <label for="action" class="form-label">Рекомендуемое действие:</label>
+                                        <select class="form-select" id="action" name="action">
+                                            <option value="">Выберите действие...</option>
+                                            <option value="Вызвать руководство">Вызвать руководство</option>
+                                            <option value="Отправить на дополнительную проверку">Отправить на дополнительную проверку</option>
+                                            <option value="Задержать">Задержать</option>
+                                            <option value="Не допускать на рейс">Не допускать на рейс</option>
+                                            <option value="Связаться с службой безопасности">Связаться с службой безопасности</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <button type="submit" class="btn btn-danger w-100">
+                                            <i class="fas fa-times"></i> Отказать в пересечении
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="fas fa-clock"></i> Время проверки:
+                        <!-- Исправленная строка -->
+                        <span th:text="${#temporals.format(#temporals.createNow(), 'dd.MM.yyyy HH:mm:ss')}"></span>
+                    </small>
+                    <div>
+                        <a th:href="@{/border/dashboard}" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-redo"></i> Новая проверка
+                        </a>
+                        <button class="btn btn-outline-secondary" onclick="window.print()">
+                            <i class="fas fa-print"></i> Распечатать
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Если проверка не была выполнена (первый заход на страницу) -->
+    <div th:if="${checkResult == null && errorMessage == null}" class="text-center py-5">
+        <div class="card border-dashed">
+            <div class="card-body">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5>Пограничная проверка</h5>
+                <p class="text-muted">Для выполнения проверки введите данные пассажира</p>
+
+                <form th:action="@{/border/check}" method="get" class="row g-3 justify-content-center">
+                    <div class="col-md-5">
+                        <label class="form-label">Номер паспорта *</label>
+                        <input type="text" class="form-control" name="passportNumber"
+                               placeholder="AB1234567" required autofocus
+                               th:value="${passportNumber}">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Номер билета (опционально)</label>
+                        <input type="text" class="form-control" name="ticketNumber"
+                               placeholder="TKT123456789"
+                               th:value="${ticketNumber}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label d-none d-md-block">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> Проверить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="layout :: footer"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Автофокус на поле заметок при разрешении
+        const officerNotes = document.getElementById('officerNotes');
+        if (officerNotes) {
+            officerNotes.focus();
+        }
+
+        // Подтверждение при отказе
+        const rejectForm = document.querySelector('form[action*="reject"]');
+        if (rejectForm) {
+            rejectForm.addEventListener('submit', function(e) {
+                const reason = document.getElementById('reason').value;
+                if (!reason) {
+                    e.preventDefault();
+                    alert('Пожалуйста, укажите причину отказа');
+                    return;
+                }
+
+                if (!confirm('Вы уверены, что хотите отказать в пересечении границы?')) {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        // Подтверждение при разрешении
+        const approveForm = document.querySelector('form[action*="approve"]');
+        if (approveForm) {
+            approveForm.addEventListener('submit', function(e) {
+                if (!confirm('Подтвердите разрешение на пересечение границы')) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

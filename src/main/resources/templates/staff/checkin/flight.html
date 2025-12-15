@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head">
+    <title>Регистрация пассажиров - Панель сотрудника</title>
+</head>
+<body>
+<div th:replace="layout :: nav"></div>
+
+<main class="container mt-4">
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-check-in"></i> Регистрация пассажиров</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/staff/dashboard}">Панель сотрудника</a></li>
+                    <li class="breadcrumb-item active">Регистрация</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="text-end">
+            <!-- Исправлено: проверка на null -->
+            <span class="badge bg-success"
+                  th:text="${scheduledFlights != null ? scheduledFlights.size() + ' рейсов' : '0 рейсов'}">
+                0 рейсов
+            </span>
+        </div>
+    </div>
+
+    <!-- Информационный блок -->
+    <div class="alert alert-info mb-4">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-info-circle fa-2x me-3"></i>
+            <div>
+                <h5 class="alert-heading mb-1">Регистрация пассажиров</h5>
+                <p class="mb-0">
+                    Выберите рейс для начала регистрации пассажиров.
+                    Регистрация доступна за 24 часа до вылета и закрывается за 40 минут до вылета.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="fas fa-filter"></i> Фильтры</h5>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/staff/checkin}" method="get" class="row g-3" id="filterForm">
+                <div class="col-md-4">
+                    <label for="departureCity" class="form-label">Город вылета</label>
+                    <input type="text" class="form-control" id="departureCity"
+                           name="departureCity" placeholder="Москва"
+                           th:value="${param.departureCity}">
+                </div>
+                <div class="col-md-4">
+                    <label for="arrivalCity" class="form-label">Город прибытия</label>
+                    <input type="text" class="form-control" id="arrivalCity"
+                           name="arrivalCity" placeholder="Санкт-Петербург"
+                           th:value="${param.arrivalCity}">
+                </div>
+                <div class="col-md-4">
+                    <label for="dateFilter" class="form-label">Дата вылета</label>
+                    <input type="date" class="form-control" id="dateFilter"
+                           name="dateFilter"
+                           th:value="${param.dateFilter}">
+                </div>
+                <div class="col-12">
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Применить фильтры
+                        </button>
+                        <a th:href="@{/staff/checkin}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Сбросить
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Рейсы на регистрации -->
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-plane"></i> Рейсы на регистрации</h5>
+        </div>
+        <div class="card-body">
+            <!-- Исправлено: проверка на null И empty -->
+            <div th:if="${scheduledFlights == null or scheduledFlights.empty}" class="text-center py-5">
+                <i class="fas fa-plane-slash fa-4x text-muted mb-3"></i>
+                <h4 th:if="${scheduledFlights == null}">Ошибка загрузки данных</h4>
+                <h4 th:if="${scheduledFlights != null and scheduledFlights.empty}">Нет рейсов на регистрации</h4>
+                <p class="text-muted mb-4">
+                    <span th:if="${scheduledFlights == null}">Не удалось загрузить список рейсов</span>
+                    <span th:if="${scheduledFlights != null and scheduledFlights.empty}">В данный момент ни один рейс не находится в статусе регистрации</span>
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a th:href="@{/staff/flights}" class="btn btn-primary">
+                        <i class="fas fa-list"></i> Посмотреть все рейсы
+                    </a>
+                    <a th:href="@{/staff/dashboard}" class="btn btn-outline-secondary">
+                        <i class="fas fa-home"></i> На главную
+                    </a>
+                </div>
+            </div>
+
+            <!-- Исправлено: проверка на не null И не empty -->
+            <div th:if="${scheduledFlights != null and not scheduledFlights.empty}" class="row">
+                <div th:each="flight : ${scheduledFlights}" class="col-md-6 mb-4">
+                    <div class="card h-100 border-success shadow-sm flight-card">
+                        <div class="card-header bg-success text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0" th:text="${flight.flightNumber}">SU1001</h5>
+                                    <small th:text="${flight.departureCity} + ' → ' + ${flight.arrivalCity}">
+                                        Москва → Санкт-Петербург
+                                    </small>
+                                </div>
+                                <span class="badge bg-light text-dark">
+                                    <!-- Используем format вместо day/month -->
+                                    <span th:text="${#temporals.format(flight.departureTime, 'dd')}">21</span>.
+                                    <span th:text="${#temporals.format(flight.departureTime, 'MM')}">12</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Время вылета и прибытия -->
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted">Вылет</small>
+                                    <h6 th:text="${#temporals.format(flight.departureTime, 'HH:mm')}">11:30</h6>
+                                    <small class="text-muted"
+                                           th:text="${#temporals.format(flight.departureTime, 'dd.MM.yyyy')}">
+                                        21.12.2024
+                                    </small>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <small class="text-muted">Прибытие</small>
+                                    <h6 th:text="${#temporals.format(flight.arrivalTime, 'HH:mm')}">13:00</h6>
+                                    <small class="text-muted"
+                                           th:text="${#temporals.format(flight.arrivalTime, 'dd.MM.yyyy')}">
+                                        21.12.2024
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Прогресс регистрации -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted">Прогресс регистрации</small>
+                                    <small>
+                                        <!-- Проверка на null -->
+                                        <span th:text="${flight.totalSeats != null ? flight.totalSeats - flight.availableSeats : 0}">0</span>/
+                                        <span th:text="${flight.totalSeats != null ? flight.totalSeats : 0}">0</span>
+                                    </small>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-success" role="progressbar"
+                                         th:if="${flight.totalSeats != null and flight.totalSeats > 0}"
+                                         th:styleappend="'width: ' + ${((flight.totalSeats - flight.availableSeats) * 100 / flight.totalSeats)} + '%;'">
+                                    </div>
+                                    <div class="progress-bar bg-secondary" role="progressbar" style="width: 100%;"
+                                         th:if="${flight.totalSeats == null or flight.totalSeats == 0}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Статистика -->
+                            <div class="row text-center mb-3">
+                                <div class="col-4">
+                                    <div class="stat-number small text-primary fw-bold"
+                                         th:text="${flight.totalSeats != null ? flight.totalSeats - flight.availableSeats : 0}">0</div>
+                                    <div class="stat-label small text-muted">Продано</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-number small text-success fw-bold">
+                                        <!-- Временно упрощаем - показываем то же, что и продано -->
+                                        <span th:text="${flight.totalSeats != null ? flight.totalSeats - flight.availableSeats : 0}">0</span>
+                                    </div>
+                                    <div class="stat-label small text-muted">Зарегистрировано</div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="stat-number small text-warning fw-bold"
+                                         th:text="${flight.availableSeats != null ? flight.availableSeats : 0}">0</div>
+                                    <div class="stat-label small text-muted">Свободно</div>
+                                </div>
+                            </div>
+
+                            <!-- До вылета (используем JavaScript) -->
+                            <div class="alert alert-light border mb-3 py-2 time-info">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i> До вылета:
+                                    </small>
+                                    <span class="fw-bold time-until"
+                                          th:if="${flight.departureTime != null}"
+                                          th:data-departure="${flight.departureTime}">
+                                        <!-- Будет заполнено JavaScript -->
+                                    </span>
+                                    <span class="fw-bold text-muted" th:if="${flight.departureTime == null}">
+                                        Время не указано
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Кнопки действий -->
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/staff/checkin/flight/{flightNumber}(flightNumber=${flight.flightNumber})}"
+                                   class="btn btn-success">
+                                    <i class="fas fa-check-in"></i> Начать регистрацию
+                                </a>
+                                <div class="btn-group" role="group">
+                                    <a th:href="@{/staff/boarding/flight/{flightNumber}(flightNumber=${flight.flightNumber})}"
+                                       class="btn btn-outline-warning">
+                                        <i class="fas fa-walking"></i> Посадка
+                                    </a>
+                                    <a th:href="@{/staff/luggage/flight/{flightNumber}(flightNumber=${flight.flightNumber})}"
+                                       class="btn btn-outline-info">
+                                        <i class="fas fa-suitcase"></i> Багаж
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Быстрый поиск пассажира -->
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-search"></i> Быстрый поиск пассажира</h5>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/staff/passengers/check}" method="get" class="row g-3">
+                <div class="col-md-6">
+                    <label for="quickPassport" class="form-label">По паспорту</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="quickPassport"
+                               name="passportNumber" placeholder="AB1234567">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Найти
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="quickTicket" class="form-label">По билету</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="quickTicket"
+                               name="ticketNumber" placeholder="TKT123456789">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Найти
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- История регистраций -->
+    <div class="card mt-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="fas fa-history"></i> Недавние регистрации</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Время</th>
+                        <th>Рейс</th>
+                        <th>Пассажир</th>
+                        <th>Паспорт</th>
+                        <th>Место</th>
+                        <th>Сотрудник</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>14:25</td>
+                        <td><strong>SU1001</strong></td>
+                        <td>Иванов И.И.</td>
+                        <td><code>AB1234567</code></td>
+                        <td><span class="badge bg-secondary">12A</span></td>
+                        <td>Мария Сидорова</td>
+                    </tr>
+                    <tr>
+                        <td>14:20</td>
+                        <td><strong>SU1003</strong></td>
+                        <td>Петров П.П.</td>
+                        <td><code>CD7890123</code></td>
+                        <td><span class="badge bg-secondary">15B</span></td>
+                        <td>Сергей Васильев</td>
+                    </tr>
+                    <tr>
+                        <td>14:15</td>
+                        <td><strong>SU1001</strong></td>
+                        <td>Сидоров С.С.</td>
+                        <td><code>EF3456789</code></td>
+                        <td><span class="badge bg-secondary">8C</span></td>
+                        <td>Анна Кузнецова</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="layout :: footer"></div>
+
+<style>
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1;
+    }
+
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.8rem;
+        margin-top: 5px;
+    }
+
+    .flight-card:hover {
+        transform: translateY(-2px);
+        transition: transform 0.2s ease;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+    }
+
+    .flight-urgent {
+        animation: pulse 2s infinite;
+        border-color: #dc3545;
+    }
+
+    .time-critical {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .time-warning {
+        color: #fd7e14;
+        font-weight: bold;
+    }
+
+    .time-normal {
+        color: #198754;
+        font-weight: bold;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Автофокус на поле фильтра
+        const departureCityInput = document.getElementById('departureCity');
+        if (departureCityInput) {
+            departureCityInput.focus();
+        }
+
+        // Функция для парсинга LocalDateTime из строки Thymeleaf
+        function parseLocalDateTime(dateTimeStr) {
+            try {
+                // Формат из Thymeleaf: "2024-12-21T11:30:00" или "2024-12-21T11:30"
+                if (dateTimeStr) {
+                    // Добавляем секунды, если их нет
+                    if (dateTimeStr.length === 16) {
+                        dateTimeStr += ':00';
+                    }
+                    return new Date(dateTimeStr);
+                }
+                return null;
+            } catch (error) {
+                console.error('Error parsing date:', dateTimeStr, error);
+                return null;
+            }
+        }
+
+        // Функция для расчета времени до вылета
+        function calculateTimeUntil(departureTimeStr) {
+            try {
+                const departureTime = parseLocalDateTime(departureTimeStr);
+                if (!departureTime) {
+                    return { hours: 0, minutes: 0, totalMinutes: 0, text: 'Ошибка времени' };
+                }
+
+                const now = new Date();
+                const diffMs = departureTime - now;
+
+                if (diffMs <= 0) {
+                    return { hours: 0, minutes: 0, totalMinutes: 0, text: 'Вылетел' };
+                }
+
+                const diffMinutes = Math.floor(diffMs / (1000 * 60));
+                const hours = Math.floor(diffMinutes / 60);
+                const minutes = diffMinutes % 60;
+
+                let text = '';
+                if (hours > 0) {
+                    text = hours + ' ч ' + minutes + ' мин';
+                } else if (minutes > 0) {
+                    text = minutes + ' мин';
+                } else {
+                    text = 'Менее минуты';
+                }
+
+                return { hours, minutes, totalMinutes: diffMinutes, text };
+            } catch (error) {
+                console.error('Error calculating time:', departureTimeStr, error);
+                return { hours: 0, minutes: 0, totalMinutes: 0, text: 'Ошибка' };
+            }
+        }
+
+        // Обрабатываем все элементы с временем до вылета
+        document.querySelectorAll('.time-until').forEach(element => {
+            const departureTimeStr = element.getAttribute('data-departure');
+            if (departureTimeStr && departureTimeStr !== 'null') {
+                const time = calculateTimeUntil(departureTimeStr);
+                element.textContent = time.text;
+
+                // Добавляем классы в зависимости от времени
+                element.classList.remove('time-critical', 'time-warning', 'time-normal');
+
+                if (time.totalMinutes < 60) {
+                    element.classList.add('time-critical');
+                    // Помечаем карточку как срочную
+                    const card = element.closest('.flight-card');
+                    if (card) {
+                        card.classList.add('flight-urgent');
+                        const header = card.querySelector('.card-header');
+                        if (header) {
+                            // Проверяем, нет ли уже иконки срочности
+                            if (!header.querySelector('.urgent-badge')) {
+                                const urgentIcon = document.createElement('span');
+                                urgentIcon.className = 'badge bg-danger ms-2 urgent-badge';
+                                urgentIcon.innerHTML = '<i class="fas fa-exclamation-circle"></i> Срочно';
+                                header.querySelector('h5').appendChild(urgentIcon);
+                            }
+                        }
+                    }
+                } else if (time.totalMinutes < 120) {
+                    element.classList.add('time-warning');
+                    const card = element.closest('.flight-card');
+                    if (card) {
+                        card.classList.remove('flight-urgent');
+                        // Удаляем иконку срочности, если она есть
+                        const urgentBadge = card.querySelector('.urgent-badge');
+                        if (urgentBadge) {
+                            urgentBadge.remove();
+                        }
+                    }
+                } else {
+                    element.classList.add('time-normal');
+                    const card = element.closest('.flight-card');
+                    if (card) {
+                        card.classList.remove('flight-urgent');
+                        // Удаляем иконку срочности, если она есть
+                        const urgentBadge = card.querySelector('.urgent-badge');
+                        if (urgentBadge) {
+                            urgentBadge.remove();
+                        }
+                    }
+                }
+            }
+        });
+
+        // Обновляем время каждую минуту
+        setInterval(() => {
+            document.querySelectorAll('.time-until').forEach(element => {
+                const departureTimeStr = element.getAttribute('data-departure');
+                if (departureTimeStr && departureTimeStr !== 'null') {
+                    const time = calculateTimeUntil(departureTimeStr);
+                    element.textContent = time.text;
+
+                    // Обновляем классы
+                    element.classList.remove('time-critical', 'time-warning', 'time-normal');
+
+                    if (time.totalMinutes < 60) {
+                        element.classList.add('time-critical');
+                        const card = element.closest('.flight-card');
+                        if (card) {
+                            card.classList.add('flight-urgent');
+                        }
+                    } else if (time.totalMinutes < 120) {
+                        element.classList.add('time-warning');
+                        const card = element.closest('.flight-card');
+                        if (card) {
+                            card.classList.remove('flight-urgent');
+                        }
+                    } else {
+                        element.classList.add('time-normal');
+                        const card = element.closest('.flight-card');
+                        if (card) {
+                            card.classList.remove('flight-urgent');
+                        }
+                    }
+                }
+            });
+        }, 60000); // Каждую минуту
+    });
+</script>
+</body>
+</html>

@@ -232,4 +232,10 @@ public class TicketServiceImpl implements TicketService {
         return !occupiedSeats.contains(seatNumber);
     }
 
+    @Override
+    public long countCheckedInByFlight(String flightNumber) {
+        return ticketRepository.countByFlightFlightNumberAndStatus(
+                flightNumber, "CHECKED_IN");
+    }
+
 }

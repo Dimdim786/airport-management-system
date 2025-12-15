@@ -90,4 +90,6 @@ public interface TicketService {
      */
     boolean isSeatAvailable(String flightNumber, String seatNumber);
 
+    long countCheckedInByFlight(String flightNumber);
+
 }

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: nav"></div>
+
+<main class="container mt-5">
+    <!-- Герой-секция -->
+    <div class="jumbotron bg-primary text-white p-5 rounded-3 mb-5">
+        <div class="container">
+            <h1 class="display-4">Добро пожаловать в систему управления аэропортом</h1>
+            <p class="lead">Современная платформа для эффективного управления рейсами, пассажирами и сотрудниками аэропорта.</p>
+            <hr class="my-4 bg-white">
+            <p>Выберите свою роль для входа в систему</p>
+            <div class="mt-4">
+                <a th:href="@{/login}" class="btn btn-light btn-lg me-2">
+                    <i class="fas fa-sign-in-alt"></i> Войти в систему
+                </a>
+                <a th:href="@{/register}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-user-plus"></i> Зарегистрироваться
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Функции системы -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <h2 class="text-center mb-4">Возможности системы</h2>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <i class="fas fa-user-tie fa-2x"></i>
+                    <h4 class="mt-2">Для администраторов</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Управление рейсами</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Управление пользователями</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Просмотр отчетов и статистики</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Контроль загрузки рейсов</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-users fa-2x"></i>
+                    <h4 class="mt-2">Для пассажиров</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Бронирование билетов онлайн</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Онлайн-регистрация на рейс</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Просмотр статуса рейсов</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Управление своими билетами</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <i class="fas fa-user-shield fa-2x"></i>
+                    <h4 class="mt-2">Для сотрудников</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Регистрация пассажиров</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Управление посадкой</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Контроль багажа</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> Паспортный и таможенный контроль</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Последние рейсы -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <h2 class="text-center mb-4">Ближайшие рейсы</h2>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>Номер рейса</th>
+                        <th>Маршрут</th>
+                        <th>Вылет</th>
+                        <th>Прибытие</th>
+                        <th>Статус</th>
+                        <th>Свободные места</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>SU1001</td>
+                        <td>Москва → Санкт-Петербург</td>
+                        <td>20.12.2024 08:00</td>
+                        <td>20.12.2024 09:30</td>
+                        <td><span class="status-badge status-scheduled">По расписанию</span></td>
+                        <td>175</td>
+                    </tr>
+                    <tr>
+                        <td>SU1003</td>
+                        <td>Санкт-Петербург → Москва</td>
+                        <td>20.12.2024 11:30</td>
+                        <td>20.12.2024 13:00</td>
+                        <td><span class="status-badge status-boarding">Идет посадка</span></td>
+                        <td>178</td>
+                    </tr>
+                    <tr>
+                        <td>SU1005</td>
+                        <td>Москва → Новосибирск</td>
+                        <td>21.12.2024 16:20</td>
+                        <td>21.12.2024 20:45</td>
+                        <td><span class="status-badge status-scheduled">По расписанию</span></td>
+                        <td>220</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center mt-3">
+                <a th:href="@{/flights}" class="btn btn-outline-primary">Все рейсы</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Контактная информация -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h4><i class="fas fa-info-circle"></i> Контактная информация</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Техническая поддержка</h5>
+                            <p><i class="fas fa-phone"></i> +7 (495) 123-45-67</p>
+                            <p><i class="fas fa-envelope"></i> support@airport.ru</p>
+                            <p><i class="fas fa-clock"></i> Пн-Пт: 9:00-18:00</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>О системе</h5>
+                            <p>Система управления аэропортом разработана в рамках курсового проекта.
+                                Предназначена для автоматизации процессов в аэропорту.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="layout :: footer"></div>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: nav"></div>
+
+<main class="container mt-4">
+    <!-- Заголовок -->
+    <div class="mb-4">
+        <h1><i class="fas fa-plane"></i> Создание нового рейса</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Панель администратора</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/admin/flights}">Рейсы</a></li>
+                <li class="breadcrumb-item active">Создание</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Форма создания рейса -->
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-plus-circle"></i> Информация о рейсе</h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/flights/create}" th:object="${flightCreateDto}" method="post">
+                        <div class="row">
+                            <!-- Основная информация -->
+                            <div class="col-md-6 mb-3">
+                                <label for="flightNumber" class="form-label">
+                                    <i class="fas fa-hashtag"></i> Номер рейса *
+                                </label>
+                                <input type="text" class="form-control" id="flightNumber"
+                                       th:field="*{flightNumber}"
+                                       placeholder="SU1001" required>
+                                <div class="form-text">Уникальный номер рейса</div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="status" class="form-label">
+                                    <i class="fas fa-info-circle"></i> Статус *
+                                </label>
+                                <select class="form-select" id="status" th:field="*{status}" required>
+                                    <option value="">Выберите статус</option>
+                                    <option value="SCHEDULED">По расписанию</option>
+                                    <option value="BOARDING">Посадка</option>
+                                    <option value="DEPARTED">Вылетел</option>
+                                    <option value="ARRIVED">Прибыл</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="departureCity" class="form-label">
+                                    <i class="fas fa-plane-departure"></i> Город отправления *
+                                </label>
+                                <input type="text" class="form-control" id="departureCity"
+                                       th:field="*{departureCity}"
+                                       placeholder="Москва" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="arrivalCity" class="form-label">
+                                    <i class="fas fa-plane-arrival"></i> Город прибытия *
+                                </label>
+                                <input type="text" class="form-control" id="arrivalCity"
+                                       th:field="*{arrivalCity}"
+                                       placeholder="Санкт-Петербург" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="departureTime" class="form-label">
+                                    <i class="fas fa-clock"></i> Время вылета *
+                                </label>
+                                <input type="datetime-local" class="form-control" id="departureTime"
+                                       th:field="*{departureTime}" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="arrivalTime" class="form-label">
+                                    <i class="fas fa-clock"></i> Время прибытия *
+                                </label>
+                                <input type="datetime-local" class="form-control" id="arrivalTime"
+                                       th:field="*{arrivalTime}" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="totalSeats" class="form-label">
+                                    <i class="fas fa-chair"></i> Всего мест *
+                                </label>
+                                <input type="number" class="form-control" id="totalSeats"
+                                       th:field="*{totalSeats}" min="1" max="500"
+                                       placeholder="180" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="availableSeats" class="form-label">
+                                    <i class="fas fa-chair"></i> Свободных мест *
+                                </label>
+                                <input type="number" class="form-control" id="availableSeats"
+                                       th:field="*{availableSeats}" min="0"
+                                       th:attr="max=*{totalSeats}"
+                                       placeholder="180" required>
+                                <div class="form-text">Не может быть больше общего количества мест</div>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-success btn-lg w-100">
+                                    <i class="fas fa-save"></i> Создать рейс
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <a th:href="@{/admin/flights}" class="btn btn-outline-secondary btn-lg w-100">
+                                    <i class="fas fa-times"></i> Отмена
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Справочная информация -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Информация</h5>
+                </div>
+                <div class="card-body">
+                    <h6><i class="fas fa-lightbulb"></i> Советы по созданию рейса:</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i>
+                            <strong>Номер рейса</strong> должен быть уникальным
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i>
+                            <strong>Время прибытия</strong> должно быть позже времени вылета
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i>
+                            <strong>Свободных мест</strong> не может быть больше общего количества
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success"></i>
+                            <strong>Статус "Посадка"</strong> устанавливается за 1-2 часа до вылета
+                        </li>
+                    </ul>
+                    <hr>
+                    <h6><i class="fas fa-history"></i> Последние созданные рейсы:</h6>
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <small class="text-muted">Сегодня</small>
+                            </div>
+                            <strong>SU1015</strong> Москва → Казань
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <small class="text-muted">Вчера</small>
+                            </div>
+                            <strong>SU1014</strong> Сочи → Москва
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Быстрые шаблоны -->
+            <div class="card mt-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Быстрые шаблоны</h5>
+                </div>
+                <div class="card-body">
+                    <p>Создать рейс по шаблону:</p>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="fillForm('domestic')">
+                            <i class="fas fa-home"></i> Внутренний рейс
+                        </button>
+                        <button type="button" class="btn btn-outline-success btn-sm" onclick="fillForm('international')">
+                            <i class="fas fa-globe"></i> Международный рейс
+                        </button>
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="fillForm('business')">
+                            <i class="fas fa-briefcase"></i> Бизнес-класс
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="layout :: footer"></div>
+
+<script>
+    // Автозаполнение формы по шаблонам
+    function fillForm(template) {
+        const templates = {
+            'domestic': {
+                flightNumber: 'SU' + (1000 + Math.floor(Math.random() * 100)),
+                departureCity: 'Москва',
+                arrivalCity: 'Санкт-Петербург',
+                totalSeats: 180,
+                availableSeats: 180,
+                status: 'SCHEDULED'
+            },
+            'international': {
+                flightNumber: 'SU' + (2000 + Math.floor(Math.random() * 100)),
+                departureCity: 'Москва',
+                arrivalCity: 'Лондон',
+                totalSeats: 250,
+                availableSeats: 250,
+                status: 'SCHEDULED'
+            },
+            'business': {
+                flightNumber: 'SU' + (3000 + Math.floor(Math.random() * 100)),
+                departureCity: 'Москва',
+                arrivalCity: 'Нью-Йорк',
+                totalSeats: 100,
+                availableSeats: 100,
+                status: 'SCHEDULED'
+            }
+        };
+
+        const tpl = templates[template];
+        if (tpl) {
+            document.getElementById('flightNumber').value = tpl.flightNumber;
+            document.getElementById('departureCity').value = tpl.departureCity;
+            document.getElementById('arrivalCity').value = tpl.arrivalCity;
+            document.getElementById('totalSeats').value = tpl.totalSeats;
+            document.getElementById('availableSeats').value = tpl.availableSeats;
+            document.getElementById('status').value = tpl.status;
+
+            // Устанавливаем время (завтра в 10:00 и 12:00)
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            const departureTime = new Date(tomorrow);
+            departureTime.setHours(10, 0, 0, 0);
+
+            const arrivalTime = new Date(tomorrow);
+            arrivalTime.setHours(12, 0, 0, 0);
+
+            document.getElementById('departureTime').value = departureTime.toISOString().slice(0, 16);
+            document.getElementById('arrivalTime').value = arrivalTime.toISOString().slice(0, 16);
+
+            alert(`Заполнен шаблон "${template}"`);
+        }
+    }
+
+    // Валидация доступных мест
+    document.getElementById('totalSeats').addEventListener('change', function() {
+        const totalSeats = parseInt(this.value) || 0;
+        const availableSeatsInput = document.getElementById('availableSeats');
+        const currentAvailable = parseInt(availableSeatsInput.value) || 0;
+
+        if (currentAvailable > totalSeats) {
+            availableSeatsInput.value = totalSeats;
+        }
+        availableSeatsInput.max = totalSeats;
+    });
+</script>
+</body>
+</html>

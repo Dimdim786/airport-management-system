@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: nav"></div>
+
+<main class="container mt-4">
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-suitcase"></i> Таможенный контроль багажа</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/customs/dashboard}">Панель таможенника</a></li>
+                    <li class="breadcrumb-item active">Контроль багажа</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-success">Таможенник</span>
+        </div>
+    </div>
+
+    <!-- Быстрый поиск -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-search"></i> Быстрый поиск</h5>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/customs/luggage-control/search}" method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">По номеру паспорта</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="passportNumber"
+                               placeholder="AB123456">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-search"></i> Найти
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">По номеру рейса</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="flightNumber"
+                               placeholder="SU1001">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-search"></i> Найти
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Случайная проверка</label>
+                    <div class="d-grid">
+                        <button type="button" class="btn btn-outline-success" onclick="randomCheck()">
+                            <i class="fas fa-random"></i> Случайный пассажир
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Активные рейсы -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0"><i class="fas fa-plane"></i> Рейсы для проверки багажа</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card h-100">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0">SU1003</h6>
+                            <small>Международный</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center mb-3">
+                                <div class="col-6">
+                                    <div class="stat-number small">2</div>
+                                    <div class="stat-label small">Багажа</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-number small">0</div>
+                                    <div class="stat-label small">Проверено</div>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <a href="#" class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-suitcase"></i> Проверить багаж
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card h-100">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="mb-0">SU1001</h6>
+                            <small>Внутренний</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center mb-3">
+                                <div class="col-6">
+                                    <div class="stat-number small">5</div>
+                                    <div class="stat-label small">Багажа</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-number small">3</div>
+                                    <div class="stat-label small">Проверено</div>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <a th:href="@{/customs/luggage-control/flight/SU1001}"
+                                   class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-suitcase"></i> Продолжить
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0">SU1002</h6>
+                            <small>Внутренний</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center mb-3">
+                                <div class="col-6">
+                                    <div class="stat-number small">4</div>
+                                    <div class="stat-label small">Багажа</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-number small">2</div>
+                                    <div class="stat-label small">Проверено</div>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <a href="#" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-suitcase"></i> Начать проверку
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card h-100">
+                        <div class="card-header bg-danger text-white">
+                            <h6 class="mb-0">SU1005</h6>
+                            <small>Международный</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center mb-3">
+                                <div class="col-6">
+                                    <div class="stat-number small">0</div>
+                                    <div class="stat-label small">Багажа</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-number small">0</div>
+                                    <div class="stat-label small">Проверено</div>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <a href="#" class="btn btn-outline-danger btn-sm disabled">
+                                    <i class="fas fa-clock"></i> Ожидает
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Панель проверки багажа -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-suitcase-rolling"></i> Проверка багажа</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-5" id="noLuggageSelected">
+                        <i class="fas fa-suitcase fa-4x text-muted mb-3"></i>
+                        <h4>Выберите багаж для проверки</h4>
+                        <p class="text-muted">Используйте поиск или выберите из списка рейсов</p>
+                    </div>
+
+                    <!-- Форма проверки багажа (скрыта по умолчанию) -->
+                    <div id="luggageVerificationForm" style="display: none;">
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <h4 id="luggagePassengerName">Анна Смирнова</h4>
+                                <p class="text-muted mb-1" id="luggagePassport">Паспорт: AB123456</p>
+                                <p class="text-muted mb-1" id="luggageFlight">Рейс: SU1001, Москва → СПб</p>
+                                <p class="text-muted mb-0">
+                                    <i class="fas fa-suitcase"></i> Багаж: 2 места, 23 кг
+                                </p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="luggage-tags">
+                                    <span class="badge bg-primary mb-1 d-block">ТЕГ: MOS123456</span>
+                                    <span class="badge bg-info mb-1 d-block">ТЕГ: MOS123457</span>
+                                    <span class="badge bg-success">ПРИОРИТЕТ</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Информация о багаже -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Место 1</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-1"><strong>Вес:</strong> 15 кг</p>
+                                        <p class="mb-1"><strong>Размеры:</strong> 55×40×23 см</p>
+                                        <p class="mb-0"><strong>Тип:</strong> Чемодан</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Место 2</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-1"><strong>Вес:</strong> 8 кг</p>
+                                        <p class="mb-1"><strong>Размеры:</strong> 40×30×15 см</p>
+                                        <p class="mb-0"><strong>Тип:</strong> Рюкзак</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Проверки -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-clipboard-check"></i> Проверки</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="checkWeight">
+                                            <label class="form-check-label" for="checkWeight">
+                                                Вес в пределах нормы
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="checkXray">
+                                            <label class="form-check-label" for="checkXray">
+                                                Рентген пройден
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="checkRestricted">
+                                            <label class="form-check-label" for="checkRestricted">
+                                                Нет запрещенных предметов
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="checkDeclaration">
+                                            <label class="form-check-label" for="checkDeclaration">
+                                                Декларация заполнена
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Декларация -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-file-alt"></i> Таможенная декларация</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                        <tr>
+                                            <th>Товар</th>
+                                            <th>Количество</th>
+                                            <th>Стоимость</th>
+                                            <th>Статус</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>Электроника</td>
+                                            <td>2 предмета</td>
+                                            <td>1500 €</td>
+                                            <td><span class="badge bg-success">Разрешено</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Алкоголь</td>
+                                            <td>1 л</td>
+                                            <td>50 €</td>
+                                            <td><span class="badge bg-warning">Лимит</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Сувениры</td>
+                                            <td>5 шт</td>
+                                            <td>200 €</td>
+                                            <td><span class="badge bg-success">Разрешено</span></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Комментарий -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-comment-alt"></i> Комментарий проверки</h6>
+                            </div>
+                            <div class="card-body">
+                                    <textarea class="form-control" id="luggageComment"
+                                              rows="3" placeholder="Опишите результаты проверки..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки действий -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-danger" onclick="rejectLuggage()">
+                                <i class="fas fa-times"></i> Отклонить
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="additionalCheck()">
+                                <i class="fas fa-search-plus"></i> Доп. проверка
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="approveLuggage()">
+                                <i class="fas fa-check"></i> Одобрить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Справочная информация -->
+        <div class="col-md-4">
+            <!-- Запрещенные предметы -->
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-ban"></i> Запрещенные предметы</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="small">
+                        <li class="mb-1">Оружие и боеприпасы</li>
+                        <li class="mb-1">Взрывчатые вещества</li>
+                        <li class="mb-1">Легковоспламеняющиеся жидкости</li>
+                        <li class="mb-1">Токсичные вещества</li>
+                        <li class="mb-1">Живые животные (без документов)</li>
+                        <li>Наркотические средства</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Ограниченные предметы -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Ограниченные предметы</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="small">
+                        <li class="mb-1">Жидкости (до 100 мл в емкости)</li>
+                        <li class="mb-1">Алкоголь (до 2 л на человека)</li>
+                        <li class="mb-1">Сигареты (до 200 шт)</li>
+                        <li class="mb-1">Лекарства (только с рецептом)</li>
+                        <li class="mb-1">Деньги (свыше 10000 € - декларация)</li>
+                        <li>Продукты животного происхождения</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Инструкция -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Инструкция по проверке</h5>
+                </div>
+                <div class="card-body">
+                    <ol class="small">
+                        <li class="mb-1">Проверить рентгеновский снимок</li>
+                        <li class="mb-1">Осмотреть багаж визуально</li>
+                        <li class="mb-1">Проверить декларацию</li>
+                        <li class="mb-1">Взвесить багаж</li>
+                        <li class="mb-1">Заполнить отчет о проверке</li>
+                        <li>Поставить отметку о проверке</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Статистика -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Сегодняшняя статистика</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="stat-number small">25</div>
+                            <div class="stat-label small">Проверено</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-number small">3</div>
+                            <div class="stat-label small">Отклонено</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-number small">2</div>
+                            <div class="stat-label small">Доп. проверка</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="layout :: footer"></div>
+
+<script>
+    // Демонстрационные данные багажа
+    const demoLuggages = [
+        {
+            name: "Анна Смирнова",
+            passport: "AB123456",
+            flight: "SU1001",
+            route: "Москва → Санкт-Петербург",
+            weight: "23 кг",
+            pieces: "2 места",
+            tags: ["MOS123456", "MOS123457"],
+            priority: true
+        },
+        {
+            name: "Михаил Попов",
+            passport: "CD789012",
+            flight: "SU1001",
+            route: "Москва → Санкт-Петербург",
+            weight: "18 кг",
+            pieces: "1 место",
+            tags: ["MOS123458"],
+            priority: false
+        },
+        {
+            name: "Екатерина Новикова",
+            passport: "EF345678",
+            flight: "SU1002",
+            route: "Москва → Сочи",
+            weight: "32 кг",
+            pieces: "3 места",
+            tags: ["MOS123459", "MOS123460", "MOS123461"],
+            priority: true
+        }
+    ];
+
+    // Выбор багажа для проверки
+    function selectLuggage(index) {
+        const luggage = demoLuggages[index];
+
+        document.getElementById('luggagePassengerName').textContent = luggage.name;
+        document.getElementById('luggagePassport').textContent = 'Паспорт: ' + luggage.passport;
+        document.getElementById('luggageFlight').textContent = `Рейс: ${luggage.flight}, ${luggage.route}`;
+
+        // Обновить теги багажа
+        const tagsContainer = document.querySelector('.luggage-tags');
+        tagsContainer.innerHTML = '';
+        luggage.tags.forEach(tag => {
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-primary mb-1 d-block';
+            badge.textContent = 'ТЕГ: ' + tag;
+            tagsContainer.appendChild(badge);
+        });
+
+        if (luggage.priority) {
+            const priorityBadge = document.createElement('span');
+            priorityBadge.className = 'badge bg-success';
+            priorityBadge.textContent = 'ПРИОРИТЕТ';
+            tagsContainer.appendChild(priorityBadge);
+        }
+
+        document.getElementById('noLuggageSelected').style.display = 'none';
+        document.getElementById('luggageVerificationForm').style.display = 'block';
+
+        // Сбросить все чекбоксы
+        document.querySelectorAll('.form-check-input').forEach(cb => cb.checked = false);
+        document.getElementById('luggageComment').value = '';
+    }
+
+    // Одобрить багаж
+    function approveLuggage() {
+        const checks = document.querySelectorAll('.form-check-input');
+        const allChecked = Array.from(checks).every(cb => cb.checked);
+
+        if (!allChecked) {
+            alert('Пожалуйста, выполните все проверки перед одобрением');
+            return;
+        }
+
+        alert('Багаж успешно проверен и одобрен!');
+        resetLuggageVerification();
+    }
+
+    // Отклонить багаж
+    function rejectLuggage() {
+        const comment = document.getElementById('luggageComment').value;
+        if (!comment.trim()) {
+            alert('Пожалуйста, укажите причину отклонения');
+            return;
+        }
+
+        if (confirm('Вы уверены, что хотите отклонить этот багаж?')) {
+            alert('Багаж отклонен. Причина: ' + comment);
+            resetLuggageVerification();
+        }
+    }
+
+    // Дополнительная проверка
+    function additionalCheck() {
+        alert('Запрошена дополнительная проверка багажа. Пассажир будет направлен на досмотр.');
+    }
+
+    // Сброс формы
+    function resetLuggageVerification() {
+        document.getElementById('noLuggageSelected').style.display = 'block';
+        document.getElementById('luggageVerificationForm').style.display = 'none';
+    }
+
+    // Случайная проверка
+    function randomCheck() {
+        const randomIndex = Math.floor(Math.random() * demoLuggages.length);
+        selectLuggage(randomIndex);
+        alert('Выбран пассажир для случайной проверки: ' + demoLuggages[randomIndex].name);
+    }
+
+    // Демонстрация: при загрузке выбрать первый багаж
+    document.addEventListener('DOMContentLoaded', function() {
+        // Автоматически выбираем первый багаж для демонстрации
+        setTimeout(() => selectLuggage(0), 1000);
+    });
+</script>
+</body>
+</html>

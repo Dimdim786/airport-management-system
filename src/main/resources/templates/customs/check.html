@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head">
+    <title>Проверка пассажира</title>
+</head>
+<body>
+<div th:replace="layout :: nav"></div>
+
+<main class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-user-check"></i> Проверка пассажира</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/customs/dashboard}">Таможенный контроль</a></li>
+                    <li class="breadcrumb-item active">Проверка</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a th:href="@{/customs/dashboard}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+        </div>
+    </div>
+
+    <!-- Сообщения -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-4">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-4">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Форма поиска -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-search"></i> Поиск пассажира</h5>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/customs/check}" method="get" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Номер паспорта</label>
+                    <input type="text" class="form-control" name="passportNumber"
+                           th:value="${passportNumber}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Номер билета (опционально)</label>
+                    <input type="text" class="form-control" name="ticketNumber"
+                           th:value="${ticketNumber}">
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Проверить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Результаты проверки -->
+    <div th:if="${checkResult != null}" class="card mb-4">
+        <!-- ИСПРАВЛЕННАЯ СТРОКА: правильный синтаксис th:classappend -->
+        <div class="card-header" th:classappend="${checkResult.allChecksPassed} ? 'bg-success text-white' : 'bg-warning text-white'">
+            <h5 class="mb-0">
+                <i class="fas" th:classappend="${checkResult.allChecksPassed} ? 'fa-check-circle' : 'fa-exclamation-triangle'"></i>
+                Результаты проверки
+            </h5>
+        </div>
+        <div class="card-body">
+            <!-- Сообщение -->
+            <div class="alert" th:classappend="${checkResult.allChecksPassed} ? 'alert-success' : 'alert-warning'">
+                <span th:text="${checkResult.verificationMessage}"></span>
+            </div>
+
+            <!-- Информация о пассажире -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h6><i class="fas fa-user me-2"></i>Пассажир</h6>
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="40%">ФИО:</th>
+                            <td th:text="${checkResult.passenger.user.firstName + ' ' + checkResult.passenger.user.lastName}"></td>
+                        </tr>
+                        <tr>
+                            <th>Паспорт:</th>
+                            <td><code th:text="${checkResult.passenger.passportNumber}"></code></td>
+                        </tr>
+                        <tr>
+                            <th>Email:</th>
+                            <td th:text="${checkResult.passenger.email}"></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="col-md-6">
+                    <h6><i class="fas fa-clipboard-check me-2"></i>Проверки</h6>
+                    <table class="table table-sm">
+                        <tr>
+                            <th width="60%">Паспорт:</th>
+                            <td>
+                                <span th:if="${checkResult.passportVerified}" class="badge bg-success">
+                                    <i class="fas fa-check"></i> Действителен
+                                </span>
+                                <span th:if="${!checkResult.passportVerified}" class="badge bg-danger">
+                                    <i class="fas fa-times"></i> Проблема
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Багаж:</th>
+                            <td>
+                                <span th:if="${checkResult.luggageVerified}" class="badge bg-success">
+                                    <i class="fas fa-check"></i> Сдан
+                                </span>
+                                <span th:if="${!checkResult.luggageVerified}" class="badge bg-danger">
+                                    <i class="fas fa-times"></i> Не сдан
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Билет:</th>
+                            <td>
+                                <span th:if="${checkResult.ticketVerified}" class="badge bg-success">
+                                    <i class="fas fa-check"></i> Проверен
+                                </span>
+                                <span th:if="${!checkResult.ticketVerified}" class="badge bg-danger">
+                                    <i class="fas fa-times"></i> Проблема
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="row">
+                <div class="col-md-6">
+                    <form th:action="@{/customs/check/approve}" method="post">
+                        <input type="hidden" name="passportNumber" th:value="${passportNumber}">
+                        <input type="hidden" name="ticketNumber" th:value="${ticketNumber}">
+                        <button type="submit" class="btn btn-success w-100"
+                                th:disabled="${!checkResult.allChecksPassed}">
+                            <i class="fas fa-check-circle"></i> Разрешить проход
+                        </button>
+                    </form>
+                </div>
+
+                <div class="col-md-6">
+                    <form th:action="@{/customs/check/reject}" method="post">
+                        <input type="hidden" name="passportNumber" th:value="${passportNumber}">
+                        <input type="hidden" name="ticketNumber" th:value="${ticketNumber}">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="reason"
+                                   placeholder="Причина отказа" required>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-times-circle"></i> Отклонить
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="layout :: footer"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Автофокус на поле паспорта
+        const passportInput = document.querySelector('input[name="passportNumber"]');
+        if (passportInput) {
+            passportInput.focus();
+        }
+
+        // Если есть результаты проверки, прокручиваем к ним
+        if ([[${checkResult != null}]]) {
+            document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+</script>
+</body>
+</html>

@@ -68,7 +68,7 @@ public class UserEntity {
     @Column(name = "created_at")
     public LocalDateTime getCreatedAt() { return createdAt; }
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     public PassengerEntity getPassenger() { return passenger; }
 
 

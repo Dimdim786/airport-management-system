@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: nav"></div>
+
+<main class="container mt-4">
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-id-card"></i> Проверка пассажира</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/staff/dashboard}">Панель сотрудника</a></li>
+                    <li class="breadcrumb-item active">Проверка пассажира</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a th:href="@{/staff/dashboard}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+        </div>
+    </div>
+
+    <!-- Сообщения -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${warningMessage}" class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span th:text="${warningMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Форма поиска -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-search"></i> Поиск пассажира</h5>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/staff/passengers/check}" method="get" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Номер паспорта</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                        <input type="text" class="form-control" name="passportNumber"
+                               placeholder="Например: AB1234567"
+                               th:value="${searchValue ?: param.passportNumber}">
+                    </div>
+                    <div class="form-text">
+                        Введите номер паспорта для поиска
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Номер билета</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-ticket-alt"></i></span>
+                        <input type="text" class="form-control" name="ticketNumber"
+                               placeholder="Например: TKT-241221-12345"
+                               th:value="${searchValue ?: param.ticketNumber}">
+                    </div>
+                    <div class="form-text">
+                        Введите номер билета для поиска
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-search"></i> Найти пассажира
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" onclick="scanQRCode()">
+                            <i class="fas fa-qrcode"></i> Сканировать QR-код
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Результаты поиска -->
+    <div th:if="${passenger != null}">
+        <!-- Информация о пассажире -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-user"></i> Информация о пассажире</h5>
+                <span class="badge bg-light text-dark" th:text="'Найдено по ' + ${foundBy}">
+                    Найдено по паспорту
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="40%">ФИО:</th>
+                                <td th:text="${passenger.user.firstName + ' ' + passenger.user.lastName}">
+                                    Иванов Иван Иванович
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Паспорт:</th>
+                                <td>
+                                    <span class="badge bg-info" th:text="${passenger.passportNumber}">AB1234567</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Email:</th>
+                                <td th:text="${passenger.email}">ivanov@example.com</td>
+                            </tr>
+                            <tr>
+                                <th>Телефон:</th>
+                                <td th:text="${passenger.phone}">+7 (999) 123-45-67</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="40%">Статус багажа:</th>
+                                <td>
+                                    <span th:if="${passenger.luggageChecked}" class="badge bg-success">
+                                        <i class="fas fa-check"></i> Сдан
+                                    </span>
+                                    <span th:unless="${passenger.luggageChecked}" class="badge bg-danger">
+                                        <i class="fas fa-times"></i> Не сдан
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Всего билетов:</th>
+                                <td th:text="${tickets != null ? tickets.size() : 0}">2</td>
+                            </tr>
+                            <tr>
+                                <th>Активные билеты:</th>
+                                <td>
+                                    <span th:text="${tickets != null ? tickets.?[status == 'BOOKED' or status == 'CHECKED_IN'].size() : 0}">
+                                        1
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Дата проверки:</th>
+                                <td th:text="${#dates.format(#dates.createNow(), 'dd.MM.yyyy HH:mm')}">
+                                    21.12.2024 14:30
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Действия с пассажиром -->
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <form th:action="@{/staff/passengers/{passportNumber}/verify(passportNumber=${passenger.passportNumber})}"
+                              method="post">
+                            <input type="hidden" name="verificationType" value="PASSPORT">
+                            <input type="hidden" name="verified" value="true">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-check-circle"></i> Проверить паспорт
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-4">
+                        <form th:action="@{/staff/passengers/{passportNumber}/luggage(passportNumber=${passenger.passportNumber})}"
+                              method="post">
+                            <input type="hidden" name="luggageChecked"
+                                   th:value="${not passenger.luggageChecked}">
+                            <button type="submit" class="btn btn-warning w-100">
+                                <i class="fas fa-suitcase"></i>
+                                <span th:if="${passenger.luggageChecked}">
+                                    Отметить багаж не сданным
+                                </span>
+                                <span th:unless="${passenger.luggageChecked}">
+                                    Отметить багаж сданным
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-info w-100" onclick="printVerification()">
+                            <i class="fas fa-print"></i> Распечатать проверку
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Билеты пассажира -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-ticket-alt"></i> Билеты пассажира</h5>
+            </div>
+            <div class="card-body">
+                <div th:if="${tickets != null and not tickets.empty}">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>Номер билета</th>
+                                <th>Рейс</th>
+                                <th>Место</th>
+                                <th>Статус</th>
+                                <th>Дата бронирования</th>
+                                <th>Действия</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="ticket : ${tickets}">
+                                <td>
+                                    <strong th:text="${ticket.ticketNumber}">TKT-241221-12345</strong>
+                                </td>
+                                <td>
+                                    <div th:if="${ticket.flightNumber}">
+                                        <span th:text="${ticket.flightNumber}">SU1001</span>
+                                    </div>
+                                    <div th:unless="${ticket.flightNumber}" class="text-muted">
+                                        Не указан
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary" th:text="${ticket.seatNumber}">12A</span>
+                                </td>
+                                <td>
+                                        <span th:switch="${ticket.status}" class="status-badge">
+                                            <span th:case="'BOOKED'" class="badge bg-warning">Забронирован</span>
+                                            <span th:case="'CHECKED_IN'" class="badge bg-success">Зарегистрирован</span>
+                                            <span th:case="'BOARDED'" class="badge bg-info">Посажен</span>
+                                        </span>
+                                </td>
+                                <td>
+                                        <span th:text="${#temporals.format(ticket.bookingDate, 'dd.MM.yyyy HH:mm')}">
+                                            21.12.2024 10:30
+                                        </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <!-- Регистрация -->
+                                        <form th:if="${ticket.status == 'BOOKED'}"
+                                              th:action="@{/staff/checkin/ticket/{ticketNumber}/register(ticketNumber=${ticket.ticketNumber})}"
+                                              method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-outline-success btn-sm">
+                                                <i class="fas fa-check-in"></i> Регистрация
+                                            </button>
+                                        </form>
+                                        <!-- Посадка -->
+                                        <form th:if="${ticket.status == 'CHECKED_IN'}"
+                                              th:action="@{/staff/boarding/ticket/{ticketNumber}/board(ticketNumber=${ticket.ticketNumber})}"
+                                              method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-outline-warning btn-sm">
+                                                <i class="fas fa-walking"></i> Посадка
+                                            </button>
+                                        </form>
+                                        <!-- Просмотр -->
+                                        <a th:href="@{/staff/boarding/ticket/{ticketNumber}(ticketNumber=${ticket.ticketNumber})}"
+                                           class="btn btn-outline-info btn-sm">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div th:if="${tickets == null or tickets.empty}">
+                    <div class="text-center py-4">
+                        <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
+                        <h5>Билеты не найдены</h5>
+                        <p class="text-muted">У этого пассажира нет билетов</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Информация о текущем билете (если искали по билету) -->
+        <div th:if="${currentTicket != null}" class="card mt-4">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Информация о текущем билете</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Детали билета:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Номер:</strong> <span th:text="${currentTicket.ticketNumber}"></span></li>
+                            <li><strong>Место:</strong> <span th:text="${currentTicket.seatNumber}"></span></li>
+                            <li><strong>Статус:</strong>
+                                <span th:switch="${currentTicket.status}">
+                                    <span th:case="'BOOKED'" class="badge bg-warning">Забронирован</span>
+                                    <span th:case="'CHECKED_IN'" class="badge bg-success">Зарегистрирован</span>
+                                    <span th:case="'BOARDED'" class="badge bg-info">Посажен</span>
+                                </span>
+                            </li>
+                            <li><strong>Стоимость:</strong> <span th:text="${currentTicket.price} + ' ₽'"></span></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Действия:</h6>
+                        <div class="d-grid gap-2">
+                            <!-- Регистрация -->
+                            <form th:if="${currentTicket.status == 'BOOKED'}"
+                                  th:action="@{/staff/checkin/ticket/{ticketNumber}/register(ticketNumber=${currentTicket.ticketNumber})}"
+                                  method="post">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fas fa-check-in"></i> Зарегистрировать пассажира
+                                </button>
+                            </form>
+                            <!-- Посадка -->
+                            <form th:if="${currentTicket.status == 'CHECKED_IN'}"
+                                  th:action="@{/staff/boarding/ticket/{ticketNumber}/board(ticketNumber=${currentTicket.ticketNumber})}"
+                                  method="post">
+                                <button type="submit" class="btn btn-warning w-100">
+                                    <i class="fas fa-walking"></i> Посадить пассажира
+                                </button>
+                            </form>
+                            <!-- Печать посадочного -->
+                            <button th:if="${currentTicket.status == 'CHECKED_IN' or currentTicket.status == 'BOARDED'}"
+                                    class="btn btn-info w-100" onclick="printBoardingPass()">
+                                <i class="fas fa-print"></i> Печать посадочного талона
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Сообщение если ничего не найдено -->
+    <div th:if="${passenger == null and (param.passportNumber != null or param.ticketNumber != null)}"
+         class="text-center py-5">
+        <i class="fas fa-user-slash fa-4x text-muted mb-4"></i>
+        <h3 class="text-muted mb-3">Пассажир не найден</h3>
+        <p class="text-muted mb-4">
+            По запросу "<span th:text="${searchValue}">AB1234567</span>" ничего не найдено
+        </p>
+        <a th:href="@{/staff/passengers/check}" class="btn btn-primary">
+            <i class="fas fa-search"></i> Попробовать снова
+        </a>
+    </div>
+</main>
+
+<div th:replace="layout :: footer"></div>
+
+<style>
+    .status-badge .badge {
+        font-size: 0.8em;
+        padding: 0.35em 0.65em;
+    }
+
+    .table-borderless th {
+        font-weight: 600;
+        color: #495057;
+    }
+</style>
+
+<script>
+    function scanQRCode() {
+        // Имитация сканирования QR-кода
+        const simulatedCodes = [
+            'TKT-241221-54321',
+            'TKT-241221-98765',
+            'AB1234567',
+            'CD7890123'
+        ];
+
+        const randomCode = simulatedCodes[Math.floor(Math.random() * simulatedCodes.length)];
+        const searchType = randomCode.startsWith('TKT') ? 'ticketNumber' : 'passportNumber';
+
+        window.location.href = `/staff/passengers/check?${searchType}=${encodeURIComponent(randomCode)}`;
+    }
+
+    function printVerification() {
+        // Печать информации о проверке
+        window.print();
+    }
+
+    function printBoardingPass() {
+        // Печать посадочного талона
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Посадочный талон</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    .boarding-pass { border: 2px solid #000; padding: 20px; max-width: 400px; }
+                    .header { text-align: center; margin-bottom: 20px; }
+                    .info { margin: 10px 0; }
+                    .barcode { text-align: center; margin-top: 20px; }
+                    .footer { margin-top: 20px; font-size: 12px; color: #666; }
+                </style>
+            </head>
+            <body>
+                <div class="boarding-pass">
+                    <div class="header">
+                        <h2>Посадочный талон</h2>
+                    </div>
+                    <div class="info"><strong>Пассажир:</strong> <span th:text="${passenger.user.firstName + ' ' + passenger.user.lastName}"></span></div>
+                    <div class="info"><strong>Паспорт:</strong> <span th:text="${passenger.passportNumber}"></span></div>
+                    <div class="info"><strong>Рейс:</strong> <span th:text="${currentTicket?.flightNumber ?: 'N/A'}"></span></div>
+                    <div class="info"><strong>Место:</strong> <span th:text="${currentTicket?.seatNumber ?: 'N/A'}"></span></div>
+                    <div class="info"><strong>Вылет:</strong> <span th:text="${#dates.format(#dates.createNow(), 'dd.MM.yyyy HH:mm')}"></span></div>
+                    <div class="barcode">
+                        <div style="font-family: 'Libre Barcode 128', cursive; font-size: 48px;">
+                            <span th:text="${currentTicket?.ticketNumber ?: passenger.passportNumber}"></span>
+                        </div>
+                    </div>
+                    <div class="footer">
+                        <p>Посадка начинается за 30 минут до вылета</p>
+                        <p>При посадке предъявите паспорт</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+    }
+</script>
+</body>
+</html>

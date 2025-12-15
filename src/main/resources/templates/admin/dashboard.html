@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: nav"></div>
+
+<main class="container mt-4">
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-tachometer-alt"></i> Панель администратора</h1>
+        <div class="text-end">
+            <span class="text-muted">Привет, <span th:text="${username}"></span></span>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" th:text="${totalFlights}">0</div>
+                <div class="stat-label">Всего рейсов</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" th:text="${activeFlights}">0</div>
+                <div class="stat-label">Активные рейсы</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number" th:text="${totalUsers}">0</div>
+                <div class="stat-label">Пользователей</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Доступность системы</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Быстрые действия -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Быстрые действия</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <a th:href="@{/admin/flights/create}" class="btn btn-success action-btn">
+                                <i class="fas fa-plane"></i><br>Создать рейс
+                            </a>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <a th:href="@{/admin/flights}" class="btn btn-primary action-btn">
+                                <i class="fas fa-list"></i><br>Все рейсы
+                            </a>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <a th:href="@{/admin/users}" class="btn btn-info action-btn">
+                                <i class="fas fa-users"></i><br>Пользователи
+                            </a>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <a th:href="@{/admin/reports}" class="btn btn-warning action-btn">
+                                <i class="fas fa-chart-bar"></i><br>Отчеты
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Последние рейсы -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-plane"></i> Последние рейсы</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th>Номер рейса</th>
+                                <th>Маршрут</th>
+                                <th>Время</th>
+                                <th>Статус</th>
+                                <th>Места</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="flight : ${flights}" th:if="${flight.status == 'SCHEDULED' or flight.status == 'BOARDING'}">
+                                <td>
+                                    <a th:href="@{/admin/flights/{id}(id=${flight.flightNumber})}"
+                                       th:text="${flight.flightNumber}">SU1001</a>
+                                </td>
+                                <td th:text="${flight.departureCity} + ' → ' + ${flight.arrivalCity}">Москва → СПб</td>
+                                <td th:text="${#temporals.format(flight.departureTime, 'dd.MM HH:mm')}">20.12 08:00</td>
+                                <td>
+                                            <span th:switch="${flight.status}" class="status-badge">
+                                                <span th:case="'SCHEDULED'" class="status-scheduled">По расписанию</span>
+                                                <span th:case="'BOARDING'" class="status-boarding">Посадка</span>
+                                                <span th:case="'DEPARTED'" class="status-departed">Вылетел</span>
+                                                <span th:case="'ARRIVED'" class="status-arrived">Прибыл</span>
+                                            </span>
+                                </td>
+                                <td th:text="${flight.availableSeats} + '/' + ${flight.totalSeats}">175/180</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a th:href="@{/admin/flights}" class="btn btn-outline-info">Все рейсы</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Системная информация -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-cogs"></i> Системная информация</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-server text-primary"></i>
+                            <strong>Статус БД:</strong> <span class="text-success">Работает</span>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-database text-primary"></i>
+                            <strong>Размер БД:</strong> 15.4 MB
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-users text-primary"></i>
+                            <strong>Активные сессии:</strong> 5
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-history text-primary"></i>
+                            <strong>Время работы:</strong> 7д 12ч
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-shield-alt text-primary"></i>
+                            <strong>Безопасность:</strong> <span class="text-success">Норма</span>
+                        </li>
+                    </ul>
+                    <hr>
+                    <div class="text-center">
+                        <a th:href="@{/admin/system}" class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-tools"></i> Настройки системы
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Последние действия -->
+            <div class="card mt-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Последние действия</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <small class="text-muted">10:30</small>
+                            <p class="mb-1">Создан рейс SU1015</p>
+                        </div>
+                        <div class="timeline-item">
+                            <small class="text-muted">09:45</small>
+                            <p class="mb-1">Зарегистрирован новый пользователь</p>
+                        </div>
+                        <div class="timeline-item">
+                            <small class="text-muted">Вчера, 18:20</small>
+                            <p class="mb-1">Обновлен статус рейса SU1003</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="layout :: footer"></div>
+</body>
+</html>

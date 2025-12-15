@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: nav"></div>
+
+<main class="container mt-4">
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-ticket-alt"></i> Мои билеты</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/passenger/dashboard}">Панель пассажира</a></li>
+                    <li class="breadcrumb-item active">Мои билеты</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a th:href="@{/passenger/flights}" class="btn btn-primary">
+                <i class="fas fa-plane"></i> Забронировать новый рейс
+            </a>
+        </div>
+    </div>
+
+    <!-- Сообщения -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <div class="stat-number text-primary" th:text="${tickets != null ? tickets.size() : 0}">0</div>
+                    <div class="stat-label">Всего билетов</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <div class="stat-number text-success"
+                         th:text="${tickets != null ? tickets.?[status == 'BOOKED'].size() : 0}">0</div>
+                    <div class="stat-label">Забронировано</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <div class="stat-number text-warning"
+                         th:text="${tickets != null ? tickets.?[status == 'CHECKED_IN'].size() : 0}">0</div>
+                    <div class="stat-label">Зарегистрировано</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <div class="stat-number text-info"
+                         th:text="${tickets != null ? tickets.?[status == 'BOARDED'].size() : 0}">0</div>
+                    <div class="stat-label">Прошли посадку</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Статус билета</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">Все статусы</option>
+                        <option value="BOOKED">Забронировано</option>
+                        <option value="CHECKED_IN">Зарегистрировано</option>
+                        <option value="BOARDED">Прошел посадку</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Дата бронирования</label>
+                    <select class="form-select" id="dateFilter">
+                        <option value="">Все даты</option>
+                        <option value="today">Сегодня</option>
+                        <option value="week">За неделю</option>
+                        <option value="month">За месяц</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                        <i class="fas fa-redo"></i> Сбросить фильтры
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список билетов -->
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list"></i> Список билетов</h5>
+            <span class="badge bg-light text-dark"
+                  th:text="${tickets != null ? tickets.size() + ' билетов' : '0 билетов'}">
+                0 билетов
+            </span>
+        </div>
+        <div class="card-body">
+            <div th:if="${tickets != null and not tickets.empty}">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="ticketsTable">
+                        <thead>
+                        <tr>
+                            <th>Номер билета</th>
+                            <th>Рейс</th>
+                            <th>Место</th>
+                            <th>Статус</th>
+                            <th>Дата бронирования</th>
+                            <th>Стоимость</th>
+                            <th>Действия</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="ticket : ${tickets}" class="ticket-row"
+                            th:data-status="${ticket.status}"
+                            th:data-date="${#temporals.format(ticket.bookingDate, 'yyyy-MM-dd')}">
+                            <td>
+                                <strong th:text="${ticket.ticketNumber}">TKT-241220-12345</strong>
+                            </td>
+                            <td>
+                                <div th:if="${ticket.flightNumber}">
+                                    <div class="fw-bold" th:text="${ticket.flightNumber}">SU1001</div>
+                                    <small class="text-muted" th:if="${ticket.flightId}">
+                                        ID: <span th:text="${ticket.flightId}">1</span>
+                                    </small>
+                                </div>
+                                <div th:unless="${ticket.flightNumber}" class="text-muted">
+                                    Информация о рейсе не доступна
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary" th:text="${ticket.seatNumber}">12A</span>
+                            </td>
+                            <td>
+                                    <span th:switch="${ticket.status}" class="status-badge">
+                                        <span th:case="'BOOKED'" class="badge bg-success">Забронировано</span>
+                                        <span th:case="'CHECKED_IN'" class="badge bg-warning">Зарегистрировано</span>
+                                        <span th:case="'BOARDED'" class="badge bg-info">Прошел посадку</span>
+                                        <span th:case="*" class="badge bg-secondary" th:text="${ticket.status}"></span>
+                                    </span>
+                            </td>
+                            <td>
+                                <span th:text="${#temporals.format(ticket.bookingDate, 'dd.MM.yyyy')}">20.12.2024</span>
+                                <br>
+                                <small class="text-muted" th:text="${#temporals.format(ticket.bookingDate, 'HH:mm')}">14:30</small>
+                            </td>
+                            <td>
+                                <span class="fw-bold" th:text="${ticket.price} + ' ₽'">5000 ₽</span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a th:href="@{/passenger/tickets/{ticketNumber}(ticketNumber=${ticket.ticketNumber})}"
+                                       class="btn btn-sm btn-outline-primary" title="Просмотр билета">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <div class="dropdown d-inline-block">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-cog"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <!-- Регистрация на рейс -->
+                                            <li th:if="${ticket.status == 'BOOKED'}">
+                                                <form th:action="@{/passenger/tickets/{ticketNumber}/checkin(ticketNumber=${ticket.ticketNumber})}"
+                                                      method="post">
+                                                    <button type="submit" class="dropdown-item text-warning">
+                                                        <i class="fas fa-check-in"></i> Пройти регистрацию
+                                                    </button>
+                                                </form>
+                                            </li>
+                                            <!-- Печать посадочного талона -->
+                                            <li th:if="${ticket.status == 'CHECKED_IN' or ticket.status == 'BOARDED'}">
+                                                <button class="dropdown-item text-info" onclick="printBoardingPass(this)"
+                                                        th:data-ticket-number="${ticket.ticketNumber}">
+                                                    <i class="fas fa-print"></i> Печать посадочного
+                                                </button>
+                                            </li>
+                                            <!-- Отмена бронирования -->
+                                            <li th:if="${ticket.status == 'BOOKED'}">
+                                                <form th:action="@{/passenger/tickets/{ticketNumber}/cancel(ticketNumber=${ticket.ticketNumber})}"
+                                                      method="post"
+                                                      onsubmit="return confirm('Вы уверены, что хотите отменить бронирование?')">
+                                                    <button type="submit" class="dropdown-item text-danger">
+                                                        <i class="fas fa-times"></i> Отменить бронирование
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Пустая строка при отсутствии билетов после фильтрации -->
+                <tr id="noResultsRow" style="display: none;">
+                    <td colspan="7" class="text-center text-muted py-5">
+                        <i class="fas fa-ticket-alt fa-3x mb-3"></i>
+                        <h5>Билеты не найдены</h5>
+                        <p class="mb-0">Попробуйте изменить параметры фильтрации</p>
+                    </td>
+                </tr>
+            </div>
+
+            <!-- Сообщение при отсутствии билетов -->
+            <div th:if="${tickets == null or tickets.empty}" class="text-center py-5">
+                <i class="fas fa-ticket-alt fa-4x text-muted mb-4"></i>
+                <h3 class="text-muted mb-3">У вас пока нет билетов</h3>
+                <p class="text-muted mb-4">Забронируйте свой первый рейс, чтобы начать путешествовать</p>
+                <a th:href="@{/passenger/flights}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plane"></i> Забронировать рейс
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Информационный блок -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="fas fa-info-circle"></i> Статусы билетов</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <span class="badge bg-success me-2">Забронировано</span>
+                            <small>Билет оплачен, но регистрация еще не пройдена</small>
+                        </li>
+                        <li class="mb-2">
+                            <span class="badge bg-warning me-2">Зарегистрировано</span>
+                            <small>Регистрация пройдена, можно получить посадочный талон</small>
+                        </li>
+                        <li>
+                            <span class="badge bg-info me-2">Прошел посадку</span>
+                            <small>Пассажир прошел посадку на рейс</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h6 class="mb-0"><i class="fas fa-clock"></i> Ближайшие рейсы</h6>
+                </div>
+                <div class="card-body">
+                    <div th:if="${tickets != null and not tickets.empty}">
+                        <div th:each="ticket : ${tickets}" th:if="${ticket.status == 'BOOKED' or ticket.status == 'CHECKED_IN'}">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span th:text="${ticket.flightNumber}">SU1001</span>
+                                <span class="badge" th:classappend="${ticket.status == 'BOOKED'} ? 'bg-success' : 'bg-warning'"
+                                      th:text="${ticket.status == 'BOOKED'} ? 'Ожидает регистрации' : 'Зарегистрирован'">
+                                </span>
+                            </div>
+                        </div>
+                        <div th:if="${tickets.?[status == 'BOOKED' or status == 'CHECKED_IN'].empty}">
+                            <small class="text-muted">Нет предстоящих рейсов</small>
+                        </div>
+                    </div>
+                    <div th:if="${tickets == null or tickets.empty}">
+                        <small class="text-muted">Нет активных билетов</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="layout :: footer"></div>
+
+<style>
+    .stat-card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        line-height: 1;
+    }
+
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    .ticket-row {
+        transition: all 0.3s ease;
+    }
+
+    .ticket-row:hover {
+        background-color: rgba(0,123,255,0.05);
+    }
+
+    .status-badge .badge {
+        font-size: 0.8em;
+        padding: 0.35em 0.65em;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Фильтрация билетов
+        const statusFilter = document.getElementById('statusFilter');
+        const dateFilter = document.getElementById('dateFilter');
+        const ticketRows = document.querySelectorAll('.ticket-row');
+        const noResultsRow = document.getElementById('noResultsRow');
+
+        function applyFilters() {
+            const statusValue = statusFilter.value;
+            const dateValue = dateFilter.value;
+            let visibleCount = 0;
+
+            // Получаем текущую дату
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+
+            ticketRows.forEach(row => {
+                const ticketStatus = row.getAttribute('data-status');
+                const ticketDate = row.getAttribute('data-date');
+                let showRow = true;
+
+                // Фильтр по статусу
+                if (statusValue && ticketStatus !== statusValue) {
+                    showRow = false;
+                }
+
+                // Фильтр по дате
+                if (dateValue && ticketDate) {
+                    const ticketDateObj = new Date(ticketDate);
+                    let shouldShow = false;
+
+                    switch(dateValue) {
+                        case 'today':
+                            shouldShow = ticketDate === todayStr;
+                            break;
+                        case 'week':
+                            const weekAgo = new Date(today);
+                            weekAgo.setDate(today.getDate() - 7);
+                            shouldShow = new Date(ticketDate) >= weekAgo;
+                            break;
+                        case 'month':
+                            const monthAgo = new Date(today);
+                            monthAgo.setMonth(today.getMonth() - 1);
+                            shouldShow = new Date(ticketDate) >= monthAgo;
+                            break;
+                    }
+
+                    if (!shouldShow) {
+                        showRow = false;
+                    }
+                }
+
+                // Показываем/скрываем строку
+                row.style.display = showRow ? '' : 'none';
+                if (showRow) visibleCount++;
+            });
+
+            // Показываем сообщение "нет результатов"
+            if (noResultsRow) {
+                if (visibleCount === 0 && ticketRows.length > 0) {
+                    noResultsRow.style.display = '';
+                    noResultsRow.parentElement.insertBefore(noResultsRow, noResultsRow.parentElement.firstChild);
+                } else {
+                    noResultsRow.style.display = 'none';
+                }
+            }
+        }
+
+        // Обработчики событий для фильтров
+        if (statusFilter) {
+            statusFilter.addEventListener('change', applyFilters);
+        }
+
+        if (dateFilter) {
+            dateFilter.addEventListener('change', applyFilters);
+        }
+
+        // Функция сброса фильтров
+        window.resetFilters = function() {
+            if (statusFilter) statusFilter.value = '';
+            if (dateFilter) dateFilter.value = '';
+            applyFilters();
+        };
+
+        // Функция печати посадочного талона
+        window.printBoardingPass = function(button) {
+            const ticketNumber = button.getAttribute('data-ticket-number');
+            alert(`Печать посадочного талона для билета: ${ticketNumber}\n\nВ реальном приложении здесь будет генерация PDF.`);
+            // В реальном приложении здесь будет запрос на сервер для генерации PDF
+        };
+
+        // Инициализация фильтров
+        applyFilters();
+    });
+</script>
+</body>
+</html>

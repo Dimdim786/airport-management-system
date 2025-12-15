@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle ?: 'Регистрация - Airport System'}">Регистрация - Airport System</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .register-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .register-header {
+            background: linear-gradient(to right, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .register-body {
+            padding: 40px;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            padding: 12px 20px;
+            border: 2px solid #e1e5ee;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .btn-register {
+            background: linear-gradient(to right, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: 5px;
+        }
+
+        .input-group-text {
+            background: #f8f9fa;
+            border: 2px solid #e1e5ee;
+            border-right: none;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="register-card">
+                <!-- Заголовок -->
+                <div class="register-header">
+                    <h2><i class="fas fa-plane-departure me-2"></i>Регистрация в Airport System</h2>
+                    <p class="mb-0">Создайте аккаунт для бронирования билетов</p>
+                </div>
+
+                <!-- Тело формы -->
+                <div class="register-body">
+                    <!-- Сообщение об ошибке -->
+                    <div th:if="${errorMessage != null}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <span th:text="${errorMessage}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <!-- Форма регистрации -->
+                    <form th:action="@{/register}" method="post" th:object="${registerRequest}" novalidate>
+                        <div class="row">
+                            <!-- Имя -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="firstName">
+                                    <i class="fas fa-user me-1"></i>Имя *
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="firstName"
+                                       th:field="*{firstName}"
+                                       placeholder="Введите имя"
+                                       required>
+                                <div class="error-message" th:if="${#fields.hasErrors('firstName')}"
+                                     th:errors="*{firstName}"></div>
+                            </div>
+
+                            <!-- Фамилия -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="lastName">
+                                    <i class="fas fa-user me-1"></i>Фамилия *
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="lastName"
+                                       th:field="*{lastName}"
+                                       placeholder="Введите фамилию"
+                                       required>
+                                <div class="error-message" th:if="${#fields.hasErrors('lastName')}"
+                                     th:errors="*{lastName}"></div>
+                            </div>
+                        </div>
+
+                        <!-- Username -->
+                        <div class="mb-3">
+                            <label class="form-label" for="username">
+                                <i class="fas fa-user-circle me-1"></i>Имя пользователя *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-user-tag"></i>
+                                </span>
+                                <input type="text"
+                                       class="form-control"
+                                       id="username"
+                                       th:field="*{username}"
+                                       placeholder="Придумайте логин"
+                                       required>
+                            </div>
+                            <div class="error-message" th:if="${#fields.hasErrors('username')}"
+                                 th:errors="*{username}"></div>
+                            <small class="form-text text-muted">Будет использоваться для входа в систему</small>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label class="form-label" for="email">
+                                <i class="fas fa-envelope me-1"></i>Email *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-at"></i>
+                                </span>
+                                <input type="email"
+                                       class="form-control"
+                                       id="email"
+                                       th:field="*{email}"
+                                       placeholder="example@mail.com"
+                                       required>
+                            </div>
+                            <div class="error-message" th:if="${#fields.hasErrors('email')}"
+                                 th:errors="*{email}"></div>
+                        </div>
+
+                        <!-- Номер паспорта -->
+                        <div class="mb-3">
+                            <label class="form-label" for="passportNumber">
+                                <i class="fas fa-passport me-1"></i>Номер паспорта *
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-id-card"></i>
+                                </span>
+                                <input type="text"
+                                       class="form-control"
+                                       id="passportNumber"
+                                       th:field="*{passportNumber}"
+                                       placeholder="AB1234567"
+                                       required>
+                            </div>
+                            <div class="error-message" th:if="${#fields.hasErrors('passportNumber')}"
+                                 th:errors="*{passportNumber}"></div>
+                        </div>
+
+                        <!-- Телефон -->
+                        <div class="mb-3">
+                            <label class="form-label" for="phone">
+                                <i class="fas fa-phone me-1"></i>Телефон
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </span>
+                                <input type="tel"
+                                       class="form-control"
+                                       id="phone"
+                                       th:field="*{phone}"
+                                       placeholder="+7 (999) 123-45-67">
+                            </div>
+                            <div class="error-message" th:if="${#fields.hasErrors('phone')}"
+                                 th:errors="*{phone}"></div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Пароль -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="password">
+                                    <i class="fas fa-lock me-1"></i>Пароль *
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-key"></i>
+                                    </span>
+                                    <input type="password"
+                                           class="form-control"
+                                           id="password"
+                                           th:field="*{password}"
+                                           placeholder="Не менее 6 символов"
+                                           required>
+                                    <button class="btn btn-outline-secondary" type="button"
+                                            onclick="togglePassword('password')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="error-message" th:if="${#fields.hasErrors('password')}"
+                                     th:errors="*{password}"></div>
+                            </div>
+
+                            <!-- Подтверждение пароля -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="confirmPassword">
+                                    <i class="fas fa-lock me-1"></i>Подтвердите пароль *
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-key"></i>
+                                    </span>
+                                    <input type="password"
+                                           class="form-control"
+                                           id="confirmPassword"
+                                           th:field="*{confirmPassword}"
+                                           placeholder="Повторите пароль"
+                                           required>
+                                    <button class="btn btn-outline-secondary" type="button"
+                                            onclick="togglePassword('confirmPassword')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="error-message" th:if="${#fields.hasErrors('confirmPassword')}"
+                                     th:errors="*{confirmPassword}"></div>
+                            </div>
+                        </div>
+
+                        <!-- Кнопка регистрации -->
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-register">
+                                <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
+                            </button>
+                        </div>
+
+                        <!-- Ссылка на вход -->
+                        <div class="login-link">
+                            Уже есть аккаунт?
+                            <a th:href="@{/login}">Войдите здесь</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Скрипт для переключения видимости пароля -->
+<script>
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        const icon = input.parentElement.querySelector('.fa-eye, .fa-eye-slash');
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>
+</body>
+</html>

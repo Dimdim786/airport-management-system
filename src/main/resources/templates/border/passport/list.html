@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: nav"></div>
+
+<main class="container mt-4">
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-passport"></i> Паспортный контроль</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/border/dashboard}">Панель пограничника</a></li>
+                    <li class="breadcrumb-item active">Паспортный контроль</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-primary">Пограничник</span>
+        </div>
+    </div>
+
+    <!-- Быстрый поиск -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-search"></i> Быстрый поиск пассажира</h5>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/border/passport-control/search}" method="get" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">По номеру паспорта</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="passportNumber"
+                               placeholder="AB123456" pattern="[A-Z0-9]{6,10}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Найти
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">По фамилии</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="lastName"
+                               placeholder="Иванов">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Найти
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Активные рейсы -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0"><i class="fas fa-plane"></i> Рейсы, требующие проверки</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0">SU1003</h6>
+                            <small>Санкт-Петербург → Москва</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center mb-3">
+                                <div class="col-6">
+                                    <div class="stat-number small">2</div>
+                                    <div class="stat-label small">Пассажиров</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-number small">0</div>
+                                    <div class="stat-label small">Проверено</div>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <a href="#" class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-user-check"></i> Проверить пассажиров
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="mb-0">SU1001</h6>
+                            <small>Москва → Санкт-Петербург</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center mb-3">
+                                <div class="col-6">
+                                    <div class="stat-number small">5</div>
+                                    <div class="stat-label small">Пассажиров</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-number small">2</div>
+                                    <div class="stat-label small">Проверено</div>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <a th:href="@{/border/passport-control/flight/SU1001}"
+                                   class="btn btn-outline-success btn-sm">
+                                    <i class="fas fa-user-check"></i> Продолжить проверку
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0">SU1002</h6>
+                            <small>Москва → Сочи</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center mb-3">
+                                <div class="col-6">
+                                    <div class="stat-number small">4</div>
+                                    <div class="stat-label small">Пассажиров</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-number small">1</div>
+                                    <div class="stat-label small">Проверено</div>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <a href="#" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-user-check"></i> Начать проверку
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Панель проверки -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-check"></i> Проверка паспорта</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-5" id="noPassengerSelected">
+                        <i class="fas fa-passport fa-4x text-muted mb-3"></i>
+                        <h4>Выберите пассажира для проверки</h4>
+                        <p class="text-muted">Используйте поиск или выберите из списка рейсов</p>
+                    </div>
+
+                    <!-- Форма проверки (скрыта по умолчанию) -->
+                    <div id="verificationForm" style="display: none;">
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <h4 id="passengerName">Иван Иванов</h4>
+                                <p class="text-muted mb-1" id="passportNumber">Паспорт: AB123456</p>
+                                <p class="text-muted mb-0" id="flightInfo">Рейс: SU1001, Москва → СПб</p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="photo-placeholder bg-light rounded d-inline-block p-3">
+                                    <i class="fas fa-user fa-3x text-secondary"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-clipboard-check"></i> Проверка документа</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="checkPhoto">
+                                            <label class="form-check-label" for="checkPhoto">
+                                                Фотография соответствует
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="checkExpiry">
+                                            <label class="form-check-label" for="checkExpiry">
+                                                Срок действия в порядке
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="checkSignature">
+                                            <label class="form-check-label" for="checkSignature">
+                                                Подпись соответствует
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="checkDatabase">
+                                            <label class="form-check-label" for="checkDatabase">
+                                                Нет в черном списке
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-comment-alt"></i> Комментарий</h6>
+                            </div>
+                            <div class="card-body">
+                                    <textarea class="form-control" id="verificationComment"
+                                              rows="3" placeholder="При необходимости добавьте комментарий..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-danger" onclick="resetVerification()">
+                                <i class="fas fa-times"></i> Отклонить
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="approveVerification()">
+                                <i class="fas fa-check"></i> Одобрить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Информация и инструкции -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Инструкция по проверке</h5>
+                </div>
+                <div class="card-body">
+                    <ol class="small">
+                        <li class="mb-2">Проверьте соответствие фотографии</li>
+                        <li class="mb-2">Убедитесь в сроке действия паспорта</li>
+                        <li class="mb-2">Сравните подпись в паспорте</li>
+                        <li class="mb-2">Проверьте паспорт по базе данных</li>
+                        <li class="mb-2">В случае сомнений - вызвите старшего</li>
+                        <li>Зафиксируйте результат проверки</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Признаки подделки</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="small">
+                        <li class="mb-1">Нечеткая печать или текст</li>
+                        <li class="mb-1">Несоответствие водяных знаков</li>
+                        <li class="mb-1">Разные шрифты в документе</li>
+                        <li class="mb-1">Следы клея или изменений</li>
+                        <li class="mb-1">Нестандартная бумага</li>
+                        <li>Неправильные серия/номер</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Сегодняшняя статистика</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="stat-number small">12</div>
+                            <div class="stat-label small">Проверено</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-number small">1</div>
+                            <div class="stat-label small">Отклонено</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="layout :: footer"></div>
+
+<script>
+    // Демонстрационные данные пассажиров
+    const demoPassengers = [
+        {
+            name: "Анна Смирнова",
+            passport: "AB123456",
+            flight: "SU1001",
+            route: "Москва → Санкт-Петербург",
+            seat: "15A"
+        },
+        {
+            name: "Михаил Попов",
+            passport: "CD789012",
+            flight: "SU1001",
+            route: "Москва → Санкт-Петербург",
+            seat: "15B"
+        },
+        {
+            name: "Екатерина Новикова",
+            passport: "EF345678",
+            flight: "SU1002",
+            route: "Москва → Сочи",
+            seat: "8C"
+        }
+    ];
+
+    // Функция для выбора пассажира
+    function selectPassenger(index) {
+        const passenger = demoPassengers[index];
+
+        document.getElementById('passengerName').textContent = passenger.name;
+        document.getElementById('passportNumber').textContent = 'Паспорт: ' + passenger.passport;
+        document.getElementById('flightInfo').textContent = `Рейс: ${passenger.flight}, ${passenger.route}, Место: ${passenger.seat}`;
+
+        document.getElementById('noPassengerSelected').style.display = 'none';
+        document.getElementById('verificationForm').style.display = 'block';
+
+        // Сбросить все чекбоксы
+        document.querySelectorAll('.form-check-input').forEach(cb => cb.checked = false);
+        document.getElementById('verificationComment').value = '';
+    }
+
+    // Функция одобрения проверки
+    function approveVerification() {
+        const checks = document.querySelectorAll('.form-check-input');
+        const allChecked = Array.from(checks).every(cb => cb.checked);
+
+        if (!allChecked) {
+            alert('Пожалуйста, выполните все проверки перед одобрением');
+            return;
+        }
+
+        alert('Паспорт успешно проверен и одобрен!');
+        resetVerification();
+    }
+
+    // Функция сброса формы
+    function resetVerification() {
+        document.getElementById('noPassengerSelected').style.display = 'block';
+        document.getElementById('verificationForm').style.display = 'none';
+    }
+
+    // Демонстрация: при загрузке выбрать первого пассажира
+    document.addEventListener('DOMContentLoaded', function() {
+        // Автоматически выбираем первого пассажира для демонстрации
+        setTimeout(() => selectPassenger(0), 1000);
+    });
+</script>
+</body>
+</html>

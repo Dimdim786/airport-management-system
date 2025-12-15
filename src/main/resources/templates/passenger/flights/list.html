@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: nav"></div>
+
+<main class="container mt-4">
+    <!-- Заголовок и поиск -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-plane"></i> Доступные рейсы</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/passenger/dashboard}">Панель пассажира</a></li>
+                    <li class="breadcrumb-item active">Рейсы</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a th:href="@{/passenger/flights/search}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-search"></i> Поиск рейсов
+            </a>
+            <a th:href="@{/passenger/tickets}" class="btn btn-outline-success">
+                <i class="fas fa-ticket-alt"></i> Мои билеты
+            </a>
+        </div>
+    </div>
+
+    <!-- Сообщения об успехе/ошибке -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Информационный блок -->
+    <div class="alert alert-info mb-4">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-info-circle fa-2x me-3"></i>
+            <div>
+                <h5 class="alert-heading mb-1">Выберите рейс для бронирования</h5>
+                <p class="mb-0">На этой странице отображаются все доступные рейсы. Нажмите "Забронировать" для выбора рейса и приобретения билета.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список рейсов -->
+    <div class="row" th:if="${not flights.empty}">
+        <div th:each="flight : ${flights}" class="col-md-6 mb-4">
+            <div class="card flight-card h-100">
+                <div class="card-header" th:classappend="${flight.availableSeats > 0} ? 'bg-success' : 'bg-secondary'">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-plane me-2"></i>
+                            <span th:text="${flight.flightNumber}">SU1001</span>
+                        </h5>
+                        <span class="badge" th:classappend="${flight.availableSeats > 0} ? 'bg-light text-success' : 'bg-danger'">
+                            <span th:if="${flight.availableSeats > 0}">
+                                <i class="fas fa-check-circle"></i>
+                                <span th:text="${flight.availableSeats} + ' мест'">10 мест</span>
+                            </span>
+                            <span th:unless="${flight.availableSeats > 0}">
+                                <i class="fas fa-times-circle"></i> Нет мест
+                            </span>
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Маршрут -->
+                    <div class="flight-route mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="text-center">
+                                <div class="city-name" th:text="${flight.departureCity}">Москва</div>
+                                <div class="time" th:text="${#temporals.format(flight.departureTime, 'HH:mm')}">08:00</div>
+                                <div class="date text-muted small" th:text="${#temporals.format(flight.departureTime, 'dd.MM.yyyy')}">20.12.2024</div>
+                            </div>
+                            <div class="flex-grow-1 text-center">
+                                <div class="flight-duration mb-2">
+                                    <i class="fas fa-clock"></i>
+                                    <span th:text="${#temporals.format(flight.arrivalTime, 'HH:mm')}">09:30</span>
+                                </div>
+                                <div class="flight-line">
+                                    <div class="line"></div>
+                                    <i class="fas fa-plane plane-icon"></i>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <div class="city-name" th:text="${flight.arrivalCity}">Санкт-Петербург</div>
+                                <div class="time" th:text="${#temporals.format(flight.arrivalTime, 'HH:mm')}">09:30</div>
+                                <div class="date text-muted small" th:text="${#temporals.format(flight.arrivalTime, 'dd.MM.yyyy')}">20.12.2024</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Детали рейса -->
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="flight-detail">
+                                <i class="fas fa-tag text-primary me-2"></i>
+                                <small class="text-muted">Статус:</small>
+                                <div>
+                                    <span th:switch="${flight.status}" class="status-badge">
+                                        <span th:case="'SCHEDULED'" class="badge bg-info">По расписанию</span>
+                                        <span th:case="'BOARDING'" class="badge bg-warning">Посадка</span>
+                                        <span th:case="'DEPARTED'" class="badge bg-danger">Вылетел</span>
+                                        <span th:case="'ARRIVED'" class="badge bg-success">Прибыл</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="flight-detail">
+                                <i class="fas fa-chair text-primary me-2"></i>
+                                <small class="text-muted">Всего мест:</small>
+                                <div class="fw-bold" th:text="${flight.totalSeats}">180</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Прогресс-бар занятости -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="text-muted">Занятость рейса:</small>
+                            <small class="text-muted">
+                                <span th:text="${flight.totalSeats - flight.availableSeats}">5</span>/
+                                <span th:text="${flight.totalSeats}">180</span> мест
+                            </small>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div th:if="${flight.totalSeats > 0}">
+                                <div th:with="occupancyPercentage=${(flight.totalSeats - flight.availableSeats) * 100 / flight.totalSeats}">
+                                    <div class="progress-bar" role="progressbar"
+                                         th:if="${occupancyPercentage > 80}"
+                                         th:class="'bg-danger'"
+                                         th:style="'width: ' + ${occupancyPercentage} + '%;'"
+                                         th:attr="aria-valuenow=${occupancyPercentage}"
+                                         aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                    <div class="progress-bar" role="progressbar"
+                                         th:if="${occupancyPercentage > 50 and occupancyPercentage <= 80}"
+                                         th:class="'bg-warning'"
+                                         th:style="'width: ' + ${occupancyPercentage} + '%;'"
+                                         th:attr="aria-valuenow=${occupancyPercentage}"
+                                         aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                    <div class="progress-bar" role="progressbar"
+                                         th:if="${occupancyPercentage <= 50}"
+                                         th:class="'bg-success'"
+                                         th:style="'width: ' + ${occupancyPercentage} + '%;'"
+                                         th:attr="aria-valuenow=${occupancyPercentage}"
+                                         aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:unless="${flight.totalSeats > 0}" class="progress-bar bg-secondary"
+                                 style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Действия -->
+                    <div class="d-grid gap-2">
+                        <a th:href="@{/passenger/flights/{flightNumber}(flightNumber=${flight.flightNumber})}"
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-info-circle"></i> Подробнее
+                        </a>
+                        <!-- Изменяем кнопку "Забронировать" чтобы вести на страницу бронирования -->
+                        <a th:if="${flight.availableSeats > 0}"
+                           th:href="@{/passenger/tickets/book(flightNumber=${flight.flightNumber})}"
+                           class="btn btn-success">
+                            <i class="fas fa-shopping-cart"></i> Забронировать
+                        </a>
+                        <button th:unless="${flight.availableSeats > 0}"
+                                class="btn btn-secondary" disabled>
+                            <i class="fas fa-ban"></i> Нет свободных мест
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Сообщение при отсутствии рейсов -->
+    <div th:if="${flights.empty}" class="text-center py-5">
+        <div class="card">
+            <div class="card-body py-5">
+                <i class="fas fa-plane-slash fa-4x text-muted mb-4"></i>
+                <h3 class="text-muted mb-3">Нет доступных рейсов</h3>
+                <p class="text-muted mb-4">В данный момент нет рейсов для бронирования.</p>
+                <a th:href="@{/passenger/flights/search}" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Попробовать поиск рейсов
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="layout :: footer"></div>
+
+<style>
+    .flight-card {
+        border: 1px solid #dee2e6;
+        transition: all 0.3s ease;
+    }
+
+    .flight-card:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .flight-route {
+        position: relative;
+    }
+
+    .city-name {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #0d6efd;
+    }
+
+    .time {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #212529;
+    }
+
+    .flight-duration {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .flight-line {
+        position: relative;
+        height: 2px;
+        background: linear-gradient(90deg, #0d6efd, #6c757d);
+        margin: 0 10px;
+    }
+
+    .flight-line .line {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #0d6efd;
+    }
+
+    .flight-line .plane-icon {
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #0d6efd;
+        font-size: 1.2rem;
+        animation: planeMove 3s infinite linear;
+    }
+
+    @keyframes planeMove {
+        0% { left: 10%; }
+        100% { left: 90%; }
+    }
+
+    .flight-detail {
+        margin-bottom: 0.5rem;
+    }
+
+    .status-badge .badge {
+        font-size: 0.8em;
+        padding: 0.35em 0.65em;
+    }
+</style>
+</body>
+</html>

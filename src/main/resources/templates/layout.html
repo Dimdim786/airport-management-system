@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} + ' - Аэропорт'">Аэропорт</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 56px;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: #0d6efd !important;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .action-btn {
+            margin: 5px;
+            min-width: 120px;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-scheduled { background-color: #cfe2ff; color: #084298; }
+        .status-boarding { background-color: #fff3cd; color: #856404; }
+        .status-departed { background-color: #d1e7dd; color: #0f5132; }
+        .status-arrived { background-color: #d3d3d3; color: #495057; }
+
+        .ticket-status { padding: 3px 8px; border-radius: 15px; font-size: 0.8rem; }
+        .status-booked { background-color: #e9ecef; color: #495057; }
+        .status-checked-in { background-color: #d1e7dd; color: #0f5132; }
+        .status-boarded { background-color: #0d6efd; color: white; }
+
+        .verification-badge {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .verified { background-color: #198754; color: white; }
+        .not-verified { background-color: #dc3545; color: white; }
+
+        footer {
+            margin-top: 40px;
+            padding: 20px 0;
+            background-color: #343a40;
+            color: white;
+        }
+
+        .breadcrumb {
+            background-color: transparent;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+<!-- Навигационная панель -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-plane"></i> Аэропорт
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Главная</a>
+                </li>
+
+                <!-- Меню для авторизованных пользователей -->
+                <li sec:authorize="isAuthenticated()" class="nav-item">
+                    <a class="nav-link" th:href="@{/dashboard}">Панель управления</a>
+                </li>
+
+                <!-- Меню для администратора -->
+                <li sec:authorize="hasRole('ADMIN')" class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                        Администрирование
+                    </a>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" th:href="@{/admin/flights}">Рейсы</a>
+                        <a class="dropdown-item" th:href="@{/admin/users}">Пользователи</a>
+                        <a class="dropdown-item" th:href="@{/admin/reports}">Отчеты</a>
+                    </div>
+                </li>
+
+                <!-- Меню для пассажира -->
+                <li sec:authorize="hasRole('PASSENGER')" class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="passengerDropdown" role="button" data-bs-toggle="dropdown">
+                        Пассажир
+                    </a>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" th:href="@{/passenger/flights}">Рейсы</a>
+                        <a class="dropdown-item" th:href="@{/passenger/tickets}">Мои билеты</a>
+                        <a class="dropdown-item" th:href="@{/passenger/profile}">Профиль</a>
+                    </div>
+                </li>
+
+                <!-- Меню для сотрудника аэропорта -->
+                <li sec:authorize="hasRole('AIRPORT_STAFF')" class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="staffDropdown" role="button" data-bs-toggle="dropdown">
+                        Сотрудник
+                    </a>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" th:href="@{/staff/boarding}">Посадка</a>
+                        <a class="dropdown-item" th:href="@{/staff/checkin}">Регистрация</a>
+                        <a class="dropdown-item" th:href="@{/staff/flights}">Рейсы</a>
+                    </div>
+                </li>
+
+                <!-- Меню для пограничника -->
+                <li sec:authorize="hasRole('BORDER_GUARD')" class="nav-item">
+                    <a class="nav-link" th:href="@{/border/passport-control}">Паспортный контроль</a>
+                </li>
+
+                <!-- Меню для таможенника -->
+                <li sec:authorize="hasRole('CUSTOMS_OFFICER')" class="nav-item">
+                    <a class="nav-link" th:href="@{/customs/luggage-control}">Таможенный контроль</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav">
+                <li sec:authorize="isAuthenticated()" class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user"></i>
+                        <span sec:authentication="name">Пользователь</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" th:href="@{/dashboard}">
+                            <i class="fas fa-tachometer-alt"></i> Панель управления
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <form th:action="@{/logout}" method="post">
+                            <button class="dropdown-item" type="submit">
+                                <i class="fas fa-sign-out-alt"></i> Выйти
+                            </button>
+                        </form>
+                    </div>
+                </li>
+                <li sec:authorize="!isAuthenticated()" class="nav-item">
+                    <a class="nav-link" th:href="@{/login}">
+                        <i class="fas fa-sign-in-alt"></i> Вход
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Основной контент -->
+<main class="container mt-4">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb" th:if="${breadcrumb}">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Главная</a></li>
+            <li class="breadcrumb-item active" th:text="${pageTitle}"></li>
+        </ol>
+    </nav>
+
+    <!-- Сообщения об ошибках/успехе -->
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle"></i>
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle"></i>
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Контент страницы -->
+    <div th:replace="${content}"></div>
+</main>
+
+<!-- Подвал -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Система управления аэропортом</h5>
+                <p>Курсовой проект по разработке веб-приложения</p>
+            </div>
+            <div class="col-md-6 text-end">
+                <p>&copy; 2024 Все права защищены</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Автоматическое скрытие alert через 5 секунд
+    setTimeout(function() {
+        var alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            var bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000);
+
+    // Подтверждение удаления
+    document.addEventListener('DOMContentLoaded', function() {
+        var deleteButtons = document.querySelectorAll('.btn-delete');
+        deleteButtons.forEach(function(button) {
+            button.addEventListener('click', function(e) {
+                if (!confirm('Вы уверены, что хотите удалить этот элемент?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

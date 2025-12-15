@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: nav"></div>
+
+<main class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-envelope"></i> Контакты</h4>
+                </div>
+                <div class="card-body">
+                    <h5>Контактная информация</h5>
+                    <p>По всем вопросам, связанным с работой системы, обращайтесь:</p>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6><i class="fas fa-phone text-primary"></i> Телефоны:</h6>
+                                    <p class="mb-0">+7 (495) 123-45-67 - Техническая поддержка</p>
+                                    <p class="mb-0">+7 (495) 987-65-43 - Администрация</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6><i class="fas fa-envelope text-primary"></i> Email:</h6>
+                                    <p class="mb-0">support@airport-system.ru</p>
+                                    <p class="mb-0">admin@airport-system.ru</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6><i class="fas fa-clock text-primary"></i> Часы работы:</h6>
+                                    <p class="mb-0">Понедельник - Пятница: 9:00 - 18:00</p>
+                                    <p class="mb-0">Суббота: 10:00 - 16:00</p>
+                                    <p class="mb-0">Воскресенье: выходной</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6><i class="fas fa-map-marker-alt text-primary"></i> Адрес:</h6>
+                                    <p class="mb-0">г. Москва, ул. Авиационная, д. 1</p>
+                                    <p class="mb-0">Аэропорт "Внуково", терминал А</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="mt-4">Форма обратной связи</h5>
+                    <form>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Ваше имя</label>
+                            <input type="text" class="form-control" id="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Тема</label>
+                            <select class="form-select" id="subject">
+                                <option>Техническая проблема</option>
+                                <option>Вопрос по использованию</option>
+                                <option>Предложение по улучшению</option>
+                                <option>Другое</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Сообщение</label>
+                            <textarea class="form-control" id="message" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Отправить сообщение
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-headset"></i> Техническая поддержка</h5>
+                </div>
+                <div class="card-body">
+                    <p>Служба технической поддержки работает круглосуточно для решения экстренных проблем:</p>
+                    <ul>
+                        <li>Проблемы с доступом к системе</li>
+                        <li>Технические сбои в работе</li>
+                        <li>Вопросы по настройке</li>
+                        <li>Обучение пользователей</li>
+                    </ul>
+                    <div class="alert alert-info">
+                        <i class="fas fa-lightbulb"></i>
+                        <strong>Совет:</strong> Перед обращением в поддержку проверьте раздел "Помощь" на главной странице.
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-question-circle"></i> Частые вопросы</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    Как восстановить пароль?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Обратитесь к администратору системы по телефону +7 (495) 123-45-67.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    Как зарегистрировать нового пользователя?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    На главной странице нажмите "Регистрация" и заполните форму. Для некоторых ролей требуется одобрение администратора.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="layout :: footer"></div>
+</body>
+</html>
